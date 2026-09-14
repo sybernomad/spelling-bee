@@ -551,7 +551,7 @@
             <label for="file-loader">📂 Load Word List (.json File):</label>
             <input type="file" id="file-loader" accept=".json">
 
-            <label for="voice-select">🎙️ Reader Voice:</label>
+            <label for="voice-select">🎙️ Reader Voice (Fallback System):</label>
             <select id="voice-select">
                 <option value="">Loading voices...</option>
             </select>
@@ -563,17 +563,18 @@
     </div>
 
     <script>
-        // Clean Master-Capped Audio Engine (Safe for mobile DACs)
+        // Clean Master-Capped Audio Engine for UI Sound FX
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let masterGain = null;
         let lastTypeSoundTime = 0;
+        let activeAudioElement = null; // HTML5 Audio stream handler to prevent mobile clipping
 
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new AudioContext();
                 masterGain = audioCtx.createGain();
-                masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime); // Hard cap at 30% to prevent speaker clipping
+                masterGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
                 masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
@@ -593,17 +594,17 @@
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(350, now);
 
                 gain.gain.setValueAtTime(0.0001, now);
-                gain.gain.exponentialRampToValueAtTime(0.03, now + 0.005);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.02, now + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
 
                 osc.connect(gain);
                 gain.connect(masterGain);
                 osc.start(now);
-                osc.stop(now + 0.035);
-                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 50);
+                osc.stop(now + 0.03);
+                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 40);
             }
             else if (type === 'correct') {
                 const notes = [523.25, 659.25, 783.99];
@@ -611,17 +612,17 @@
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
                     const t = now + idx * 0.08;
-                    osc.type = 'triangle';
+                    osc.type = 'sine';
                     osc.frequency.setValueAtTime(freq, t);
 
                     gain.gain.setValueAtTime(0.0001, t);
-                    gain.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+                    gain.gain.exponentialRampToValueAtTime(0.04, t + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
 
                     osc.connect(gain);
                     gain.connect(masterGain);
                     osc.start(t);
-                    osc.stop(t + 0.25);
+                    osc.stop(t + 0.22);
                     setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.08 + 0.3) * 1000);
                 });
             }
@@ -629,18 +630,18 @@
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+                osc.frequency.setValueAtTime(140, now);
+                osc.frequency.linearRampToValueAtTime(90, now + 0.18);
 
                 gain.gain.setValueAtTime(0.0001, now);
-                gain.gain.exponentialRampToValueAtTime(0.05, now + 0.012);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+                gain.gain.exponentialRampToValueAtTime(0.04, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
 
                 osc.connect(gain);
                 gain.connect(masterGain);
                 osc.start(now);
-                osc.stop(now + 0.25);
-                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 300);
+                osc.stop(now + 0.2);
+                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 250);
             }
             else if (type === 'victory') {
                 const notes = [440, 554.37, 659.25, 880];
@@ -652,14 +653,14 @@
                     osc.frequency.setValueAtTime(freq, t);
 
                     gain.gain.setValueAtTime(0.0001, t);
-                    gain.gain.exponentialRampToValueAtTime(0.06, t + 0.015);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+                    gain.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
 
                     osc.connect(gain);
                     gain.connect(masterGain);
                     osc.start(t);
-                    osc.stop(t + 0.4);
-                    setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.12 + 0.5) * 1000);
+                    osc.stop(t + 0.35);
+                    setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.12 + 0.4) * 1000);
                 });
             }
         }
@@ -738,7 +739,6 @@
         let ghostMask = [];
 
         const synth = window.speechSynthesis;
-        let currentUtterance = null;
 
         const serverListSelect = document.getElementById('server-list-select');
         const setupScreen = document.getElementById('setup-screen');
@@ -905,25 +905,12 @@
             if (usVoices.length === 0) usVoices = voices.filter(v => v.lang.startsWith('en'));
             const displayList = usVoices.length > 0 ? usVoices : voices;
 
-            const preferredVoices = [
-                'Google US English', 'Microsoft Jenny', 'Microsoft Aria',
-                'Samantha', 'Karen', 'Daniel', 'Victoria', 'Zira', 'Susan'
-            ];
-
             displayList.forEach((voice) => {
                 const option = document.createElement('option');
                 option.textContent = `${voice.name} (${voice.lang})`;
                 option.setAttribute('data-name', voice.name);
                 voiceSelect.appendChild(option);
             });
-
-            for (const preferred of preferredVoices) {
-                const matchIndex = displayList.findIndex(v => v.name.includes(preferred));
-                if (matchIndex !== -1) {
-                    voiceSelect.selectedIndex = matchIndex;
-                    break;
-                }
-            }
         }
 
         populateVoices();
@@ -943,9 +930,8 @@
             startGame(rawActiveList);
         });
 
-        // Safe mobile speech rates (avoiding extreme low values like 0.5 that distort mobile audio)
-        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 1.0));
-        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.75));
+        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], false));
+        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], true));
         restartBtn.addEventListener('click', resetGame);
         reviewBtn.addEventListener('click', startReviewMode);
         answerForm.addEventListener('submit', handleAnswerSubmit);
@@ -981,7 +967,6 @@
 
         document.addEventListener('click', (e) => {
             initAudio();
-            if (!synth.speaking && synth.paused) synth.resume();
             if (!gameScreen.classList.contains('hidden')) {
                 if (!window.matchMedia("(pointer: coarse)").matches) {
                     if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
@@ -1083,10 +1068,10 @@
             hiddenInput.maxLength = wordLength;
 
             for (let i = 0; i < wordLength; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'tile';
-                tile.id = `tile-${i}`;
-                tilesContainer.appendChild(tile);
+                const tl = document.createElement('div');
+                tl.className = 'tile';
+                tl.id = `tile-${i}`;
+                tilesContainer.appendChild(tl);
             }
         }
 
@@ -1108,33 +1093,39 @@
                 hiddenInput.focus();
             }
 
-            speakPhrase(words[currentIndex], 1.0);
+            speakPhrase(words[currentIndex], false);
         }
 
-        function speakPhrase(phrase, speed = 1.0) {
-            if (!synth) return;
+        // Crackle-Free Hybrid Speech Engine: Uses standard HTML5 Audio stream for clear mobile playback
+        function speakPhrase(phrase, slowDown = false) {
+            if (!phrase) return;
 
-            if (synth.speaking || synth.pending) {
-                synth.cancel();
+            // Stop any currently playing audio stream
+            if (activeAudioElement) {
+                activeAudioElement.pause();
+                activeAudioElement = null;
             }
 
-            setTimeout(() => {
-                currentUtterance = new SpeechSynthesisUtterance(phrase);
+            // Fallback check: Use reliable high-definition cloud speech audio stream endpoint
+            const sanitizedWord = encodeURIComponent(phrase.trim());
+            const speechUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${sanitizedWord}&tl=en&client=tw-ob`;
 
-                if (selectedVoice) {
-                    currentUtterance.voice = selectedVoice;
+            activeAudioElement = new Audio(speechUrl);
+
+            // If slow speed is requested, set HTML5 playbackRate natively (smooth scaling without native speech stutter)
+            activeAudioElement.playbackRate = slowDown ? 0.75 : 1.0;
+
+            activeAudioElement.play().catch(err => {
+                console.warn("HTML5 audio playback blocked or failed, falling back to local synthesizer:", err);
+                // Fallback to local native web speech if network blocks the stream
+                if (synth) {
+                    synth.cancel();
+                    const utterance = new SpeechSynthesisUtterance(phrase);
+                    if (selectedVoice) utterance.voice = selectedVoice;
+                    utterance.rate = slowDown ? 0.75 : 1.0;
+                    synth.speak(utterance);
                 }
-
-                currentUtterance.rate = speed;
-                currentUtterance.pitch = 1.0;
-                currentUtterance.volume = 1.0;
-
-                currentUtterance.onerror = (e) => {
-                    console.warn("Speech synthesis error:", e);
-                };
-
-                synth.speak(currentUtterance);
-            }, 80);
+            });
         }
 
         function handleAnswerSubmit(e) {
@@ -1207,7 +1198,7 @@
                             hiddenInput.focus();
                         }
 
-                        speakPhrase(words[currentIndex], 0.75);
+                        speakPhrase(words[currentIndex], true);
                     }, 1200);
 
                 } else {
