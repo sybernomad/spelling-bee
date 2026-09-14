@@ -501,8 +501,7 @@
             </div>
 
             <form id="answer-form">
-                <button type="submit" class="btn-main" style="margin-top: 2px; width: 100%;">Submit Answer (↵
-                    Enter)</button>
+                <button type="submit" class="btn-main" style="margin-top: 2px; width: 100%;">Submit Answer</button>
             </form>
 
             <div id="feedback" class="feedback"></div>
@@ -530,9 +529,11 @@
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
                 <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.</li>
+                    <em>"🐢 Read Slow"</em> to listen again.
+                </li>
                 <li><strong>Spell:</strong> Type using your keyboard or tap the onscreen letter buttons. Click
-                    <strong>Submit</strong> or press <strong>Enter</strong>.</li>
+                    <strong>Submit</strong> or press <strong>Enter</strong>.
+                </li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
                     appear with hints!</li>
                 <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
@@ -578,7 +579,7 @@
 
             if (!audioCtx) {
                 try {
-                    audioCtx = new AudioContextClass({ latencyHint: 'interactive' });
+                    audioCtx = new AudioContextClass({latencyHint: 'interactive'});
                     masterGain = audioCtx.createGain();
                     masterGain.gain.value = 0.12;
                     masterGain.connect(audioCtx.destination);
@@ -592,7 +593,7 @@
                 if (!audioReadyPromise) {
                     audioReadyPromise = audioCtx.resume()
                         .catch(err => console.warn('Could not resume audio context:', err))
-                        .finally(() => { audioReadyPromise = null; });
+                        .finally(() => {audioReadyPromise = null;});
                 }
                 return audioReadyPromise.then(() => audioCtx.state === 'running');
             }
@@ -627,8 +628,8 @@
                 try {
                     osc.disconnect();
                     gain.disconnect();
-                } catch (_) {}
-            }, { once: true });
+                } catch (_) { }
+            }, {once: true});
         }
 
         function playSound(type) {
@@ -888,11 +889,31 @@
             reader.readAsText(file);
         });
 
-        populateVoices();
-        if (synth && synth.onvoiceschanged !== undefined) {
-            synth.onvoiceschanged = populateVoices;
-        }
+        function populateVoices() {
+            if (!synth) return;
+            const voices = synth.getVoices();
+            voiceSelect.innerHTML = '';
 
+            // Filter strictly for US English or general English voices
+            let usVoices = voices.filter(v => v.lang === 'en-US' || v.lang === 'en_US');
+            if (usVoices.length === 0) {
+                usVoices = voices.filter(v => v.lang.startsWith('en'));
+            }
+            const displayList = usVoices.length > 0 ? usVoices : voices;
+
+            displayList.forEach((voice) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.setAttribute('data-name', voice.name);
+
+                // Automatically select the first available en-US or default voice
+                if (voice.default || voice.lang.includes('en-US')) {
+                    option.selected = true;
+                }
+
+                voiceSelect.appendChild(option);
+            });
+        }
         voiceSelect.addEventListener('change', () => {
             selectedVoice = resolveSelectedVoice();
         });
@@ -965,7 +986,7 @@
                     hiddenInput.focus();
                 }
             }
-        }, { passive: true });
+        }, {passive: true});
 
         function startGame(customList = null) {
             const rawText = customList ? customList.join(', ') : wordInput.value.trim();
@@ -1183,7 +1204,7 @@
 
             try {
                 synth.cancel();
-            } catch (_) {}
+            } catch (_) { }
 
             const voice = resolveSelectedVoice();
             selectedVoice = voice;
