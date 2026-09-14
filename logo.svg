@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 160" width="100%" height="100%">
+  <defs>
+    <filter id="drop" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background container -->
+  <rect width="600" height="160" rx="24" fill="#FEF9E7"/>
+
+  <!-- Left Bee Icon Group -->
+  <g transform="translate(45, 40)" filter="url(#drop)">
+    <!-- Yellow Hexagon Backdrop -->
+    <polygon points="40,0 75,20 75,60 40,80 5,60 5,20" fill="#F1C40F"/>
+    <polygon points="40,6 69,23 69,57 40,74 11,57 11,23" fill="#F39C12"/>
+    <!-- Bee Mascot -->
+    <ellipse cx="28" cy="32" rx="12" ry="8" fill="#E0F2FE" opacity="0.85" transform="rotate(-30 28 32)"/>
+    <ellipse cx="45" cy="32" rx="12" ry="8" fill="#E0F2FE" opacity="0.85" transform="rotate(30 45 32)"/>
+    <ellipse cx="40" cy="45" rx="18" ry="13" fill="#2C3E50"/>
+    <path d="M 32 34 Q 40 45 32 56" stroke="#F1C40F" stroke-width="4" fill="none"/>
+    <path d="M 42 33 Q 50 45 42 57" stroke="#F1C40F" stroke-width="4" fill="none"/>
+    <circle cx="28" cy="42" r="2.5" fill="#FFFFFF"/>
+  </g>
+
+  <!-- SPELLING Tiles -->
+  <g transform="translate(155, 30)" filter="url(#drop)">
+    <!-- Tile S -->
+    <rect x="0" y="0" width="42" height="48" rx="8" fill="#4A90E2"/><text x="21" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">S</text>
+    <!-- Tile P -->
+    <rect x="48" y="0" width="42" height="48" rx="8" fill="#4A90E2"/><text x="69" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">P</text>
+    <!-- Tile E -->
+    <rect x="96" y="0" width="42" height="48" rx="8" fill="#4A90E2"/><text x="117" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">E</text>
+    <!-- Tile L -->
+    <rect x="144" y="0" width="42" height="48" rx="8" fill="#2ECC71"/><text x="165" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">L</text>
+    <!-- Tile L -->
+    <rect x="192" y="0" width="42" height="48" rx="8" fill="#2ECC71"/><text x="213" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">L</text>
+    <!-- Tile I -->
+    <rect x="240" y="0" width="42" height="48" rx="8" fill="#4A90E2"/><text x="261" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">I</text>
+    <!-- Tile N -->
+    <rect x="288" y="0" width="42" height="48" rx="8" fill="#4A90E2"/><text x="309" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">N</text>
+    <!-- Tile G -->
+    <rect x="336" y="0" width="42" height="48" rx="8" fill="#4A90E2"/><text x="357" y="34" font-family="'Segoe UI', sans-serif" font-weight="800" font-size="28" fill="#FFF" text-anchor="middle">G</text>
+  </g>
+
+  <!-- BEE Gold Banner Tiles -->
+  <g transform="translate(263, 90)" filter="url(#drop)">
+    <!-- Tile B -->
+    <rect x="0" y="0" width="50" height="54" rx="10" fill="#F1C40F" stroke="#E67E22" stroke-width="2"/><text x="25" y="38" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="34" fill="#2C3E50" text-anchor="middle">B</text>
+    <!-- Tile E -->
+    <rect x="58" y="0" width="50" height="54" rx="10" fill="#F1C40F" stroke="#E67E22" stroke-width="2"/><text x="83" y="38" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="34" fill="#2C3E50" text-anchor="middle">E</text>
+    <!-- Tile E -->
+    <rect x="116" y="0" width="50" height="54" rx="10" fill="#F1C40F" stroke="#E67E22" stroke-width="2"/><text x="141" y="38" font-family="'Segoe UI', sans-serif" font-weight="900" font-size="34" fill="#2C3E50" text-anchor="middle">E</text>
+  </g>
+</svg>
