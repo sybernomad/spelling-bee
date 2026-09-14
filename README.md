@@ -1,4 +1,4 @@
-# 🐝 Spelling Bee (v1.0.0)
+# 🐝 Spelling Bee
 
 A kid-friendly web-based **Spelling Bee** game designed for children and parents.
 

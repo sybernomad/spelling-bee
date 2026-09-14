@@ -188,6 +188,7 @@
             }
         }
 
+        /* Wordle-Style Tiles Container */
         .tiles-container {
             display: flex;
             justify-content: center;
@@ -199,6 +200,7 @@
             align-items: center;
         }
 
+        /* Wordle-Style Tile Formatting */
         .tile {
             width: 44px;
             height: 52px;
@@ -415,11 +417,9 @@
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
                 <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.
-                </li>
+                    <em>"🐢 Read Slow"</em> to listen again.</li>
                 <li><strong>Spell:</strong> Type your answer using your keyboard. Click <strong>Submit</strong> or press
-                    <strong>Enter</strong>.
-                </li>
+                    <strong>Enter</strong>.</li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
                     appear with hints!</li>
                 <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
@@ -648,7 +648,7 @@
         // Load Server Manifest for Weekly Preset Dropdown
         async function loadServerManifest() {
             try {
-                const response = await fetch('./word-lists/manifest.json');
+                const response = await fetch('word-lists/manifest.json');
                 if (!response.ok) return;
 
                 const fileList = await response.json();
@@ -675,8 +675,8 @@
             if (selectedFile === 'custom') return;
 
             try {
-                const response = await fetch(`./word-lists/${selectedFile}`);
-                if (!response.ok) stroke; throw new Error('File not found');
+                const response = await fetch(`word-lists/${selectedFile}`);
+                if (!response.ok) throw new Error('File not found');
 
                 const list = await response.json();
                 wordInput.value = list.join(', ');
