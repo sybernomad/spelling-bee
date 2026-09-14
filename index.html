@@ -564,7 +564,7 @@
     </div>
 
     <script>
-        // Optimized Persistent Audio Architecture for Mobile
+        // Persistent Audio Engine for Mobile UI Feedback
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let persistentOsc = null;
@@ -574,7 +574,6 @@
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new AudioContext();
-                // Create a persistent single-oscillator/gain routing setup for rapid typing feedback
                 try {
                     persistentOsc = audioCtx.createOscillator();
                     persistentGain = audioCtx.createGain();
@@ -583,9 +582,7 @@
                     persistentOsc.connect(persistentGain);
                     persistentGain.connect(audioCtx.destination);
                     persistentOsc.start();
-                } catch (e) {
-                    console.log('Persistent audio setup fallback enabled');
-                }
+                } catch (e) { }
             }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
@@ -743,6 +740,7 @@
         let ghostMask = [];
 
         const synth = window.speechSynthesis;
+        let currentUtterance = null; // Global reference guard to prevent mobile garbage-collection cutoffs
 
         const serverListSelect = document.getElementById('server-list-select');
         const setupScreen = document.getElementById('setup-screen');
@@ -901,6 +899,7 @@
         });
 
         function populateVoices() {
+            if (!synth) return;
             const voices = synth.getVoices();
             voiceSelect.innerHTML = '';
 
@@ -908,9 +907,9 @@
             if (usVoices.length === 0) usVoices = voices.filter(v => v.lang.startsWith('en'));
             const displayList = usVoices.length > 0 ? usVoices : voices;
 
-            const preferredFemaleVoices = [
-                'Google US English', 'Microsoft Jenny Online', 'Microsoft Aria Online',
-                'Samantha', 'Ava', 'Victoria', 'Zira', 'Susan'
+            const preferredVoices = [
+                'Google US English', 'Microsoft Jenny', 'Microsoft Aria',
+                'Samantha', 'Karen', 'Daniel', 'Victoria', 'Zira', 'Susan'
             ];
 
             displayList.forEach((voice) => {
@@ -920,7 +919,7 @@
                 voiceSelect.appendChild(option);
             });
 
-            for (const preferred of preferredFemaleVoices) {
+            for (const preferred of preferredVoices) {
                 const matchIndex = displayList.findIndex(v => v.name.includes(preferred));
                 if (matchIndex !== -1) {
                     voiceSelect.selectedIndex = matchIndex;
@@ -930,8 +929,8 @@
         }
 
         populateVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = populateVoices;
+        if (synth && synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = populateVoices;
         }
 
         startBtn.addEventListener('click', () => {
@@ -946,8 +945,8 @@
             startGame(rawActiveList);
         });
 
-        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.85));
-        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.55));
+        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.80));
+        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.50));
         restartBtn.addEventListener('click', resetGame);
         reviewBtn.addEventListener('click', startReviewMode);
         answerForm.addEventListener('submit', handleAnswerSubmit);
@@ -984,7 +983,8 @@
         });
 
         document.addEventListener('click', (e) => {
-            initAudio(); // Ensures user gesture unlocks context anywhere
+            initAudio();
+            if (!synth.speaking && synth.paused) synth.resume(); // Unlock mobile speech context
             if (!gameScreen.classList.contains('hidden')) {
                 if (!window.matchMedia("(pointer: coarse)").matches) {
                     if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
@@ -1111,22 +1111,37 @@
                 hiddenInput.focus();
             }
 
-            speakPhrase(words[currentIndex], 0.85);
+            speakPhrase(words[currentIndex], 0.80);
         }
 
-        function speakPhrase(phrase, speed = 0.85) {
+        // Revamped Mobile-Optimized Speech Engine
+        function speakPhrase(phrase, speed = 0.80) {
             if (!synth) return;
 
-            if (synth.speaking) {
+            // Completely clear queue to prevent multi-word overlapping or stutter jams on mobile
+            if (synth.speaking || synth.pending) {
                 synth.cancel();
             }
 
+            // Small delay to allow mobile Web Speech engines to clear buffer state safely
             setTimeout(() => {
-                const utterance = new SpeechSynthesisUtterance(phrase);
-                if (selectedVoice) utterance.voice = selectedVoice;
-                utterance.rate = speed;
-                synth.speak(utterance);
-            }, 50);
+                currentUtterance = new SpeechSynthesisUtterance(phrase);
+
+                if (selectedVoice) {
+                    currentUtterance.voice = selectedVoice;
+                }
+
+                currentUtterance.rate = speed; // Slower cadence ensures high clarity for kids
+                currentUtterance.pitch = 1.0;
+                currentUtterance.volume = 1.0;
+
+                // Safety error handling wrapper for restricted mobile audio webviews
+                currentUtterance.onerror = (e) => {
+                    console.warn("Speech synthesis encountered an error or was interrupted:", e);
+                };
+
+                synth.speak(currentUtterance);
+            }, 80);
         }
 
         function handleAnswerSubmit(e) {
@@ -1199,7 +1214,7 @@
                             hiddenInput.focus();
                         }
 
-                        speakPhrase(words[currentIndex], 0.55);
+                        speakPhrase(words[currentIndex], 0.50);
                     }, 1200);
 
                 } else {
