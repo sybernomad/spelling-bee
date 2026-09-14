@@ -563,106 +563,98 @@
     </div>
 
     <script>
-        // Clean Master-Capped Audio Engine for UI Sound FX
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        // Mobile-safe audio engine.
+        // IMPORTANT: speech is handled by the browser/OS SpeechSynthesis engine below.
+        // Web Audio is used only for very short UI feedback tones, which avoids
+        // creating/stopping streamed speech elements on every mobile interaction.
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let masterGain = null;
         let lastTypeSoundTime = 0;
-        let activeAudioElement = null; // HTML5 Audio stream handler to prevent mobile clipping
+        let audioReadyPromise = null;
 
         function initAudio() {
+            if (!AudioContextClass) return Promise.resolve(false);
+
             if (!audioCtx) {
-                audioCtx = new AudioContext();
-                masterGain = audioCtx.createGain();
-                masterGain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                masterGain.connect(audioCtx.destination);
+                try {
+                    audioCtx = new AudioContextClass({ latencyHint: 'interactive' });
+                    masterGain = audioCtx.createGain();
+                    masterGain.gain.value = 0.12;
+                    masterGain.connect(audioCtx.destination);
+                } catch (err) {
+                    console.warn('Web Audio unavailable:', err);
+                    return Promise.resolve(false);
+                }
             }
+
             if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+                if (!audioReadyPromise) {
+                    audioReadyPromise = audioCtx.resume()
+                        .catch(err => console.warn('Could not resume audio context:', err))
+                        .finally(() => { audioReadyPromise = null; });
+                }
+                return audioReadyPromise.then(() => audioCtx.state === 'running');
             }
+
+            return Promise.resolve(audioCtx.state === 'running');
+        }
+
+        function playTone(freq, startTime, duration, volume = 0.08, type = 'sine', endFreq = null) {
+            if (!audioCtx || !masterGain || audioCtx.state !== 'running') return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const endTime = startTime + duration;
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, startTime);
+            if (endFreq !== null) {
+                osc.frequency.linearRampToValueAtTime(endFreq, endTime);
+            }
+
+            // Short equal-power-ish envelope prevents clicks and keeps mobile output modest.
+            gain.gain.setValueAtTime(0.00001, startTime);
+            gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume), startTime + Math.min(0.008, duration * 0.2));
+            gain.gain.exponentialRampToValueAtTime(0.00001, endTime);
+
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(startTime);
+            osc.stop(endTime + 0.005);
+
+            osc.addEventListener('ended', () => {
+                try {
+                    osc.disconnect();
+                    gain.disconnect();
+                } catch (_) {}
+            }, { once: true });
         }
 
         function playSound(type) {
-            initAudio();
-            if (!audioCtx || audioCtx.state !== 'running') return;
-            const now = audioCtx.currentTime;
+            // Do not start a new AudioContext from every tap. The context is created once,
+            // then resumed only after a real user gesture when needed.
+            initAudio().then(ready => {
+                if (!ready || !audioCtx) return;
+                const now = audioCtx.currentTime;
 
-            if (type === 'type') {
-                if (now - lastTypeSoundTime < 0.05) return;
-                lastTypeSoundTime = now;
-
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(350, now);
-
-                gain.gain.setValueAtTime(0.0001, now);
-                gain.gain.exponentialRampToValueAtTime(0.02, now + 0.005);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
-
-                osc.connect(gain);
-                gain.connect(masterGain);
-                osc.start(now);
-                osc.stop(now + 0.03);
-                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 40);
-            }
-            else if (type === 'correct') {
-                const notes = [523.25, 659.25, 783.99];
-                notes.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    const t = now + idx * 0.08;
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, t);
-
-                    gain.gain.setValueAtTime(0.0001, t);
-                    gain.gain.exponentialRampToValueAtTime(0.04, t + 0.01);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
-
-                    osc.connect(gain);
-                    gain.connect(masterGain);
-                    osc.start(t);
-                    osc.stop(t + 0.22);
-                    setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.08 + 0.3) * 1000);
-                });
-            }
-            else if (type === 'wrong') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(140, now);
-                osc.frequency.linearRampToValueAtTime(90, now + 0.18);
-
-                gain.gain.setValueAtTime(0.0001, now);
-                gain.gain.exponentialRampToValueAtTime(0.04, now + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.18);
-
-                osc.connect(gain);
-                gain.connect(masterGain);
-                osc.start(now);
-                osc.stop(now + 0.2);
-                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 250);
-            }
-            else if (type === 'victory') {
-                const notes = [440, 554.37, 659.25, 880];
-                notes.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    const t = now + idx * 0.12;
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, t);
-
-                    gain.gain.setValueAtTime(0.0001, t);
-                    gain.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
-
-                    osc.connect(gain);
-                    gain.connect(masterGain);
-                    osc.start(t);
-                    osc.stop(t + 0.35);
-                    setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.12 + 0.4) * 1000);
-                });
-            }
+                if (type === 'type') {
+                    // Hard throttle typing clicks. This is especially important on phones.
+                    if (now - lastTypeSoundTime < 0.055) return;
+                    lastTypeSoundTime = now;
+                    playTone(360, now, 0.024, 0.045, 'sine');
+                } else if (type === 'correct') {
+                    [523.25, 659.25, 783.99].forEach((freq, idx) => {
+                        playTone(freq, now + idx * 0.075, 0.16, 0.075, 'sine');
+                    });
+                } else if (type === 'wrong') {
+                    playTone(145, now, 0.16, 0.065, 'triangle', 92);
+                } else if (type === 'victory') {
+                    [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                        playTone(freq, now + idx * 0.105, 0.22, 0.08, 'sine');
+                    });
+                }
+            });
         }
 
         // Canvas Confetti Generator
@@ -738,7 +730,7 @@
         let playerName = 'Speller 1';
         let ghostMask = [];
 
-        const synth = window.speechSynthesis;
+        const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
 
         const serverListSelect = document.getElementById('server-list-select');
         const setupScreen = document.getElementById('setup-screen');
@@ -896,42 +888,38 @@
             reader.readAsText(file);
         });
 
-        function populateVoices() {
-            if (!synth) return;
-            const voices = synth.getVoices();
-            voiceSelect.innerHTML = '';
-
-            let usVoices = voices.filter(v => v.lang === 'en-US' || v.lang === 'en_US');
-            if (usVoices.length === 0) usVoices = voices.filter(v => v.lang.startsWith('en'));
-            const displayList = usVoices.length > 0 ? usVoices : voices;
-
-            displayList.forEach((voice) => {
-                const option = document.createElement('option');
-                option.textContent = `${voice.name} (${voice.lang})`;
-                option.setAttribute('data-name', voice.name);
-                voiceSelect.appendChild(option);
-            });
-        }
-
         populateVoices();
         if (synth && synth.onvoiceschanged !== undefined) {
             synth.onvoiceschanged = populateVoices;
         }
 
+        voiceSelect.addEventListener('change', () => {
+            selectedVoice = resolveSelectedVoice();
+        });
+
+
         startBtn.addEventListener('click', () => {
+            unlockSpeech();
             initAudio();
             isReviewMode = false;
             startGame();
         });
 
         replaySameBtn.addEventListener('click', () => {
+            unlockSpeech();
             initAudio();
             isReviewMode = false;
             startGame(rawActiveList);
         });
 
-        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], false));
-        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], true));
+        repeatBtn.addEventListener('click', () => {
+            unlockSpeech();
+            speakPhrase(words[currentIndex], false);
+        });
+        slowBtn.addEventListener('click', () => {
+            unlockSpeech();
+            speakPhrase(words[currentIndex], true);
+        });
         restartBtn.addEventListener('click', resetGame);
         reviewBtn.addEventListener('click', startReviewMode);
         answerForm.addEventListener('submit', handleAnswerSubmit);
@@ -965,16 +953,19 @@
             }
         });
 
-        document.addEventListener('click', (e) => {
+        document.addEventListener('pointerdown', (e) => {
+            // This is a real user gesture on mobile, so it is a good place to unlock
+            // both native speech and the small Web Audio feedback engine.
+            unlockSpeech();
             initAudio();
-            if (!gameScreen.classList.contains('hidden')) {
-                if (!window.matchMedia("(pointer: coarse)").matches) {
-                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                        hiddenInput.focus();
-                    }
+
+            if (!gameScreen.classList.contains('hidden') && !window.matchMedia("(pointer: coarse)").matches) {
+                const tag = e.target.tagName;
+                if (tag !== 'BUTTON' && tag !== 'SELECT' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+                    hiddenInput.focus();
                 }
             }
-        });
+        }, { passive: true });
 
         function startGame(customList = null) {
             const rawText = customList ? customList.join(', ') : wordInput.value.trim();
@@ -995,8 +986,7 @@
             if (!customList) missedWords = [];
             playerName = playerNameInput.value.trim() || 'Speller 1';
 
-            const selectedOptionName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
-            selectedVoice = synth.getVoices().find(v => v.name === selectedOptionName);
+            selectedVoice = resolveSelectedVoice();
 
             currentIndex = 0;
             score = 0;
@@ -1096,36 +1086,133 @@
             speakPhrase(words[currentIndex], false);
         }
 
-        // Crackle-Free Hybrid Speech Engine: Uses standard HTML5 Audio stream for clear mobile playback
-        function speakPhrase(phrase, slowDown = false) {
-            if (!phrase) return;
+        // Mobile-first speech engine.
+        // Use the device/browser's native speech synthesizer instead of streaming an
+        // undocumented third-party TTS URL. Native speech avoids network buffering,
+        // low-bitrate streaming artifacts, and playbackRate distortion on phones.
+        let speechRequestId = 0;
+        let speechUnlockStarted = false;
+        let speechVoicesReady = false;
 
-            // Stop any currently playing audio stream
-            if (activeAudioElement) {
-                activeAudioElement.pause();
-                activeAudioElement = null;
+        function chooseBestVoice() {
+            if (!synth) return null;
+            const voices = synth.getVoices();
+            if (!voices.length) return null;
+
+            const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
+            const candidates = english.length ? english : voices;
+
+            // Prefer high-quality/local voices where the browser exposes that metadata.
+            const preferredNames = [
+                'Samantha', 'Karen', 'Daniel', 'Alex', 'Google US English',
+                'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Guy'
+            ];
+
+            for (const preferred of preferredNames) {
+                const exact = candidates.find(v => v.name.toLowerCase().includes(preferred.toLowerCase()));
+                if (exact) return exact;
             }
 
-            // Fallback check: Use reliable high-definition cloud speech audio stream endpoint
-            const sanitizedWord = encodeURIComponent(phrase.trim());
-            const speechUrl = `https://translate.google.com/translate_tts?ie=UTF-8&q=${sanitizedWord}&tl=en&client=tw-ob`;
+            const local = candidates.find(v => v.localService);
+            return local || candidates[0] || null;
+        }
 
-            activeAudioElement = new Audio(speechUrl);
+        function populateVoices() {
+            if (!synth) return;
+            const voices = synth.getVoices();
+            if (!voices.length) return;
 
-            // If slow speed is requested, set HTML5 playbackRate natively (smooth scaling without native speech stutter)
-            activeAudioElement.playbackRate = slowDown ? 0.75 : 1.0;
+            speechVoicesReady = true;
+            const currentName = voiceSelect.selectedOptions[0]?.getAttribute('data-name') || '';
+            const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
+            const displayList = english.length ? english : voices;
+            const best = chooseBestVoice();
 
-            activeAudioElement.play().catch(err => {
-                console.warn("HTML5 audio playback blocked or failed, falling back to local synthesizer:", err);
-                // Fallback to local native web speech if network blocks the stream
-                if (synth) {
-                    synth.cancel();
-                    const utterance = new SpeechSynthesisUtterance(phrase);
-                    if (selectedVoice) utterance.voice = selectedVoice;
-                    utterance.rate = slowDown ? 0.75 : 1.0;
-                    synth.speak(utterance);
-                }
+            voiceSelect.innerHTML = '';
+            displayList.forEach((voice) => {
+                const option = document.createElement('option');
+                option.textContent = `${voice.name} (${voice.lang})`;
+                option.setAttribute('data-name', voice.name);
+                voiceSelect.appendChild(option);
             });
+
+            if (currentName && displayList.some(v => v.name === currentName)) {
+                voiceSelect.value = displayList.find(v => v.name === currentName).name;
+            } else if (best) {
+                voiceSelect.value = best.name;
+            }
+
+            selectedVoice = displayList.find(v => v.name === voiceSelect.value) || best || null;
+        }
+
+        // iOS/Safari can require SpeechSynthesis to be touched from a user gesture before
+        // later programmatic speech calls work reliably. Prime it once, silently, on input.
+        function unlockSpeech() {
+            if (!synth || speechUnlockStarted) return;
+            speechUnlockStarted = true;
+
+            try {
+                synth.cancel();
+                const primer = new SpeechSynthesisUtterance('');
+                primer.volume = 0;
+                primer.rate = 1;
+                primer.pitch = 1;
+                synth.speak(primer);
+            } catch (err) {
+                console.warn('Speech unlock failed:', err);
+            }
+        }
+
+        function resolveSelectedVoice() {
+            if (!synth) return null;
+            const desiredName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
+            const voices = synth.getVoices();
+            return voices.find(v => v.name === desiredName) || selectedVoice || chooseBestVoice();
+        }
+
+        function speakPhrase(phrase, slowDown = false) {
+            if (!phrase) return;
+            if (!synth) {
+                console.warn('SpeechSynthesis is not available in this browser.');
+                return;
+            }
+
+            const requestId = ++speechRequestId;
+            const text = String(phrase).trim();
+            if (!text) return;
+
+            try {
+                synth.cancel();
+            } catch (_) {}
+
+            const voice = resolveSelectedVoice();
+            selectedVoice = voice;
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = voice?.lang || 'en-US';
+            if (voice) utterance.voice = voice;
+            utterance.rate = slowDown ? 0.72 : 0.95;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            utterance.onend = () => {
+                if (requestId !== speechRequestId) return;
+            };
+            utterance.onerror = (event) => {
+                if (requestId !== speechRequestId) return;
+                console.warn('Speech synthesis error:', event.error || event);
+            };
+
+            // A tiny deferred speak helps some mobile engines finish processing the cancel()
+            // before the new utterance is queued.
+            window.setTimeout(() => {
+                if (requestId !== speechRequestId) return;
+                try {
+                    synth.speak(utterance);
+                } catch (err) {
+                    console.warn('Speech synthesis failed:', err);
+                }
+            }, 30);
         }
 
         function handleAnswerSubmit(e) {
