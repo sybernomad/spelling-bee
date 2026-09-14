@@ -489,7 +489,6 @@
                     <button class="key" data-key="l">l</button>
                 </div>
                 <div class="keyboard-row">
-                    <button class="key wide" data-key="ENTER">↵</button>
                     <button class="key" data-key="z">z</button>
                     <button class="key" data-key="x">x</button>
                     <button class="key" data-key="c">c</button>
@@ -564,7 +563,7 @@
     </div>
 
     <script>
-        // Persistent Audio Engine for Mobile UI Feedback
+        // Click-Free Exponential Audio Engine for Mobile
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let persistentOsc = null;
@@ -578,7 +577,7 @@
                     persistentOsc = audioCtx.createOscillator();
                     persistentGain = audioCtx.createGain();
                     persistentOsc.type = 'sine';
-                    persistentGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    persistentGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
                     persistentOsc.connect(persistentGain);
                     persistentGain.connect(audioCtx.destination);
                     persistentOsc.start();
@@ -602,9 +601,9 @@
 
                 if (persistentGain) {
                     persistentGain.gain.cancelScheduledValues(now);
-                    persistentGain.gain.setValueAtTime(0.001, now);
-                    persistentGain.gain.linearRampToValueAtTime(0.03, now + 0.008);
-                    persistentGain.gain.linearRampToValueAtTime(0.001, now + 0.03);
+                    persistentGain.gain.setValueAtTime(0.0001, now);
+                    persistentGain.gain.exponentialRampToValueAtTime(0.02, now + 0.008);
+                    persistentGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
                 }
             }
             else if (type === 'correct') {
@@ -616,9 +615,9 @@
                     osc.type = 'triangle';
                     osc.frequency.setValueAtTime(freq, noteTime);
 
-                    gain.gain.setValueAtTime(0.001, noteTime);
-                    gain.gain.linearRampToValueAtTime(0.06, noteTime + 0.01);
-                    gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.25);
+                    gain.gain.setValueAtTime(0.0001, noteTime);
+                    gain.gain.exponentialRampToValueAtTime(0.06, noteTime + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.25);
 
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
@@ -634,9 +633,9 @@
                 osc.frequency.setValueAtTime(160, now);
                 osc.frequency.linearRampToValueAtTime(110, now + 0.25);
 
-                gain.gain.setValueAtTime(0.001, now);
-                gain.gain.linearRampToValueAtTime(0.06, now + 0.02);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.25);
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(0.06, now + 0.015);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
 
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
@@ -653,9 +652,9 @@
                     osc.type = 'sine';
                     osc.frequency.setValueAtTime(freq, noteTime);
 
-                    gain.gain.setValueAtTime(0.001, noteTime);
-                    gain.gain.linearRampToValueAtTime(0.08, noteTime + 0.02);
-                    gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.4);
+                    gain.gain.setValueAtTime(0.0001, noteTime);
+                    gain.gain.exponentialRampToValueAtTime(0.08, noteTime + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.4);
 
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
@@ -740,7 +739,7 @@
         let ghostMask = [];
 
         const synth = window.speechSynthesis;
-        let currentUtterance = null; // Global reference guard to prevent mobile garbage-collection cutoffs
+        let currentUtterance = null;
 
         const serverListSelect = document.getElementById('server-list-select');
         const setupScreen = document.getElementById('setup-screen');
@@ -963,9 +962,7 @@
             if (!keyBtn) return;
             const keyValue = keyBtn.getAttribute('data-key');
 
-            if (keyValue === 'ENTER') {
-                answerForm.requestSubmit();
-            } else if (keyValue === 'BACK') {
+            if (keyValue === 'BACK') {
                 if (hiddenInput.value.length > 0) {
                     hiddenInput.value = hiddenInput.value.slice(0, -1);
                     playSound('type');
@@ -984,7 +981,7 @@
 
         document.addEventListener('click', (e) => {
             initAudio();
-            if (!synth.speaking && synth.paused) synth.resume(); // Unlock mobile speech context
+            if (!synth.speaking && synth.paused) synth.resume();
             if (!gameScreen.classList.contains('hidden')) {
                 if (!window.matchMedia("(pointer: coarse)").matches) {
                     if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
@@ -1114,16 +1111,13 @@
             speakPhrase(words[currentIndex], 0.80);
         }
 
-        // Revamped Mobile-Optimized Speech Engine
         function speakPhrase(phrase, speed = 0.80) {
             if (!synth) return;
 
-            // Completely clear queue to prevent multi-word overlapping or stutter jams on mobile
             if (synth.speaking || synth.pending) {
                 synth.cancel();
             }
 
-            // Small delay to allow mobile Web Speech engines to clear buffer state safely
             setTimeout(() => {
                 currentUtterance = new SpeechSynthesisUtterance(phrase);
 
@@ -1131,11 +1125,10 @@
                     currentUtterance.voice = selectedVoice;
                 }
 
-                currentUtterance.rate = speed; // Slower cadence ensures high clarity for kids
+                currentUtterance.rate = speed;
                 currentUtterance.pitch = 1.0;
                 currentUtterance.volume = 1.0;
 
-                // Safety error handling wrapper for restricted mobile audio webviews
                 currentUtterance.onerror = (e) => {
                     console.warn("Speech synthesis encountered an error or was interrupted:", e);
                 };
