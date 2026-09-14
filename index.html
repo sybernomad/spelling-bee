@@ -89,7 +89,6 @@
             border-radius: 10px;
             box-sizing: border-box;
             font-size: 16px;
-            /* Prevents auto-zoom on iOS */
             margin-bottom: 1.2rem;
             background-color: var(--card-bg);
             color: var(--text-color);
@@ -192,6 +191,7 @@
             }
         }
 
+        /* Wordle-Style Tiles Container */
         .tiles-container {
             display: flex;
             justify-content: center;
@@ -203,6 +203,7 @@
             align-items: center;
         }
 
+        /* Wordle-Style Tile Formatting */
         .tile {
             width: 42px;
             height: 50px;
@@ -441,11 +442,9 @@
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
                 <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.
-                </li>
+                    <em>"🐢 Read Slow"</em> to listen again.</li>
                 <li><strong>Spell:</strong> Type your answer using your keyboard. Click <strong>Submit</strong> or press
-                    <strong>Enter</strong>.
-                </li>
+                    <strong>Enter</strong>.</li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
                     appear with hints!</li>
                 <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
@@ -846,8 +845,8 @@
             startGame(rawActiveList);
         });
 
-        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 1.0));
-        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.6));
+        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.85));
+        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.55));
         restartBtn.addEventListener('click', resetGame);
         reviewBtn.addEventListener('click', startReviewMode);
         answerForm.addEventListener('submit', handleAnswerSubmit);
@@ -989,16 +988,22 @@
             updateTilesDisplay();
             hiddenInput.focus();
 
-            speakPhrase(words[currentIndex], 0.9);
+            speakPhrase(words[currentIndex], 0.85);
         }
 
-        function speakPhrase(phrase, speed = 0.9) {
-            if (synth.speaking) synth.cancel();
+        function speakPhrase(phrase, speed = 0.85) {
+            if (!synth) return;
 
-            const utterance = new SpeechSynthesisUtterance(phrase);
-            if (selectedVoice) utterance.voice = selectedVoice;
-            utterance.rate = speed;
-            synth.speak(utterance);
+            if (synth.speaking) {
+                synth.cancel();
+            }
+
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(phrase);
+                if (selectedVoice) utterance.voice = selectedVoice;
+                utterance.rate = speed;
+                synth.speak(utterance);
+            }, 50);
         }
 
         function handleAnswerSubmit(e) {
@@ -1069,7 +1074,7 @@
                         updateTilesDisplay();
                         hiddenInput.focus();
 
-                        speakPhrase(words[currentIndex], 0.6);
+                        speakPhrase(words[currentIndex], 0.55);
                     }, 1200);
 
                 } else {
