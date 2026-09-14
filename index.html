@@ -563,7 +563,7 @@
     </div>
 
     <script>
-        // Revamped Master-Capped Click-Free Mobile Audio Engine
+        // Clean Master-Capped Audio Engine (Safe for mobile DACs)
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let masterGain = null;
@@ -572,9 +572,8 @@
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new AudioContext();
-                // Create a master volume limiter to completely prevent mobile speaker distortion/crackling
                 masterGain = audioCtx.createGain();
-                masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime); // Hard cap at 30% master volume
+                masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime); // Hard cap at 30% to prevent speaker clipping
                 masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
@@ -597,7 +596,7 @@
                 osc.frequency.setValueAtTime(440, now);
 
                 gain.gain.setValueAtTime(0.0001, now);
-                gain.gain.exponentialRampToValueAtTime(0.04, now + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.03, now + 0.005);
                 gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
 
                 osc.connect(gain);
@@ -616,7 +615,7 @@
                     osc.frequency.setValueAtTime(freq, t);
 
                     gain.gain.setValueAtTime(0.0001, t);
-                    gain.gain.exponentialRampToValueAtTime(0.06, t + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(0.05, t + 0.012);
                     gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
 
                     osc.connect(gain);
@@ -634,7 +633,7 @@
                 osc.frequency.linearRampToValueAtTime(100, now + 0.2);
 
                 gain.gain.setValueAtTime(0.0001, now);
-                gain.gain.exponentialRampToValueAtTime(0.06, now + 0.012);
+                gain.gain.exponentialRampToValueAtTime(0.05, now + 0.012);
                 gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
 
                 osc.connect(gain);
@@ -653,7 +652,7 @@
                     osc.frequency.setValueAtTime(freq, t);
 
                     gain.gain.setValueAtTime(0.0001, t);
-                    gain.gain.exponentialRampToValueAtTime(0.08, t + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.06, t + 0.015);
                     gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
 
                     osc.connect(gain);
@@ -944,8 +943,9 @@
             startGame(rawActiveList);
         });
 
-        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.80));
-        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.50));
+        // Safe mobile speech rates (avoiding extreme low values like 0.5 that distort mobile audio)
+        repeatBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 1.0));
+        slowBtn.addEventListener('click', () => speakPhrase(words[currentIndex], 0.75));
         restartBtn.addEventListener('click', resetGame);
         reviewBtn.addEventListener('click', startReviewMode);
         answerForm.addEventListener('submit', handleAnswerSubmit);
@@ -1108,10 +1108,10 @@
                 hiddenInput.focus();
             }
 
-            speakPhrase(words[currentIndex], 0.80);
+            speakPhrase(words[currentIndex], 1.0);
         }
 
-        function speakPhrase(phrase, speed = 0.80) {
+        function speakPhrase(phrase, speed = 1.0) {
             if (!synth) return;
 
             if (synth.speaking || synth.pending) {
@@ -1130,7 +1130,7 @@
                 currentUtterance.volume = 1.0;
 
                 currentUtterance.onerror = (e) => {
-                    console.warn("Speech synthesis encountered an error or was interrupted:", e);
+                    console.warn("Speech synthesis error:", e);
                 };
 
                 synth.speak(currentUtterance);
@@ -1207,7 +1207,7 @@
                             hiddenInput.focus();
                         }
 
-                        speakPhrase(words[currentIndex], 0.50);
+                        speakPhrase(words[currentIndex], 0.75);
                     }, 1200);
 
                 } else {
