@@ -191,19 +191,17 @@
             }
         }
 
-        /* Wordle-Style Tiles Container */
         .tiles-container {
             display: flex;
             justify-content: center;
             gap: 8px;
-            margin: 1.5rem 0;
+            margin: 1.2rem 0;
             flex-wrap: wrap;
             cursor: pointer;
             min-height: 58px;
             align-items: center;
         }
 
-        /* Wordle-Style Tile Formatting */
         .tile {
             width: 42px;
             height: 50px;
@@ -242,6 +240,51 @@
             box-shadow: none;
         }
 
+        .virtual-keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin: 1rem 0;
+            user-select: none;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .key {
+            background-color: #e2e8f0;
+            color: #2c3e50;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            padding: 12px 0;
+            flex: 1;
+            max-width: 42px;
+            height: 48px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.1s;
+            text-transform: uppercase;
+        }
+
+        .key:active {
+            background-color: #cbd5e1;
+            transform: scale(0.95);
+        }
+
+        .key.wide {
+            max-width: 65px;
+            font-size: 0.9rem;
+            background-color: #cbd5e1;
+        }
+
         .shake {
             animation: shake 0.4s ease-in-out;
         }
@@ -273,7 +316,7 @@
         }
 
         .feedback {
-            margin-top: 1rem;
+            margin-top: 0.8rem;
             font-size: 1.1rem;
             font-weight: bold;
             min-height: 28px;
@@ -339,20 +382,32 @@
         @media (max-width: 600px) {
             body {
                 align-items: flex-start;
-                padding: 10px;
+                padding: 6px;
             }
 
             .container {
-                padding: 1.2rem;
+                padding: 1rem;
                 border-radius: 14px;
                 margin-top: 5px;
                 margin-bottom: 20px;
             }
 
             .tile {
-                width: 38px;
-                height: 46px;
+                width: 36px;
+                height: 44px;
                 font-size: 1.5rem;
+            }
+
+            .key {
+                max-width: 33px;
+                height: 44px;
+                font-size: 1rem;
+                padding: 0;
+            }
+
+            .key.wide {
+                max-width: 52px;
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -402,7 +457,7 @@
                 <div>⏱️ <span id="timer">0s</span></div>
             </div>
 
-            <div style="margin-bottom: 1rem;">
+            <div style="margin-bottom: 0.8rem;">
                 <button id="repeat-btn" class="btn-secondary">🔊 Hear Word</button>
                 <button id="slow-btn" class="btn-hint">🐢 Read Slow</button>
             </div>
@@ -410,11 +465,48 @@
             <!-- Dynamic Tiles -->
             <div id="tiles-container" class="tiles-container"></div>
 
-            <!-- Hidden input -->
+            <!-- Hidden input for physical desktop keyboards -->
             <input type="text" id="hidden-input" autocomplete="off" autocapitalize="off" spellcheck="false">
 
+            <div class="virtual-keyboard" id="virtual-keyboard">
+                <div class="keyboard-row">
+                    <button class="key" data-key="q">q</button>
+                    <button class="key" data-key="w">w</button>
+                    <button class="key" data-key="e">e</button>
+                    <button class="key" data-key="r">r</button>
+                    <button class="key" data-key="t">t</button>
+                    <button class="key" data-key="y">y</button>
+                    <button class="key" data-key="u">u</button>
+                    <button class="key" data-key="i">i</button>
+                    <button class="key" data-key="o">o</button>
+                    <button class="key" data-key="p">p</button>
+                </div>
+                <div class="keyboard-row">
+                    <button class="key" data-key="a">a</button>
+                    <button class="key" data-key="s">s</button>
+                    <button class="key" data-key="d">d</button>
+                    <button class="key" data-key="f">f</button>
+                    <button class="key" data-key="g">g</button>
+                    <button class="key" data-key="h">h</button>
+                    <button class="key" data-key="j">j</button>
+                    <button class="key" data-key="k">k</button>
+                    <button class="key" data-key="l">l</button>
+                </div>
+                <div class="keyboard-row">
+                    <button class="key wide" data-key="ENTER">↵</button>
+                    <button class="key" data-key="z">z</button>
+                    <button class="key" data-key="x">x</button>
+                    <button class="key" data-key="c">c</button>
+                    <button class="key" data-key="v">v</button>
+                    <button class="key" data-key="b">b</button>
+                    <button class="key" data-key="n">n</button>
+                    <button class="key" data-key="m">m</button>
+                    <button class="key wide" data-key="BACK">⌫</button>
+                </div>
+            </div>
+
             <form id="answer-form">
-                <button type="submit" class="btn-main" style="margin-top: 5px;">Submit Answer (↵ Enter)</button>
+                <button type="submit" class="btn-main" style="margin-top: 2px; width: 100%;">Submit Answer</button>
             </form>
 
             <div id="feedback" class="feedback"></div>
@@ -442,9 +534,11 @@
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
                 <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.</li>
-                <li><strong>Spell:</strong> Type your answer using your keyboard. Click <strong>Submit</strong> or press
-                    <strong>Enter</strong>.</li>
+                    <em>"🐢 Read Slow"</em> to listen again.
+                </li>
+                <li><strong>Spell:</strong> Type using your keyboard or tap the onscreen letter buttons. Click
+                    <strong>Submit</strong> or press <strong>Enter</strong>.
+                </li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
                     appear with hints!</li>
                 <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
@@ -679,6 +773,7 @@
         const slowBtn = document.getElementById('slow-btn');
         const restartBtn = document.getElementById('restart-btn');
         const answerForm = document.getElementById('answer-form');
+        const virtualKeyboard = document.getElementById('virtual-keyboard');
 
         // Modals Toggle
         helpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
@@ -851,6 +946,7 @@
         reviewBtn.addEventListener('click', startReviewMode);
         answerForm.addEventListener('submit', handleAnswerSubmit);
 
+        // Physical desktop keyboard listener
         hiddenInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -858,11 +954,30 @@
             }
         });
 
-        // Mobile focus helper: scrolls tiles and input into view when focused
-        hiddenInput.addEventListener('focus', () => {
-            setTimeout(() => {
-                tilesContainer.scrollIntoView({behavior: 'smooth', block: 'center'});
-            }, 250);
+        // Virtual Onscreen Keyboard Click Handler
+        virtualKeyboard.addEventListener('click', (e) => {
+            const keyBtn = e.target.closest('.key');
+            if (!keyBtn) return;
+            const keyValue = keyBtn.getAttribute('data-key');
+
+            if (keyValue === 'ENTER') {
+                answerForm.requestSubmit();
+            } else if (keyValue === 'BACK') {
+                if (hiddenInput.value.length > 0) {
+                    hiddenInput.value = hiddenInput.value.slice(0, -1);
+                    playSound('type');
+                    updateTilesDisplay();
+                }
+            } else {
+                // Check if max length applies during attempt 3
+                const targetWord = words[currentIndex] || '';
+                if (currentAttempts < maxAttempts && hiddenInput.value.length >= targetWord.length) {
+                    return; // Don't overflow fixed tile grid
+                }
+                hiddenInput.value += keyValue;
+                playSound('type');
+                updateTilesDisplay();
+            }
         });
 
         document.addEventListener('click', (e) => {
