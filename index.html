@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Spelling Bee Game</title>
     <style>
         :root {
@@ -29,6 +29,7 @@
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
         }
 
         .container {
@@ -41,6 +42,7 @@
             text-align: center;
             position: relative;
             z-index: 1;
+            box-sizing: border-box;
         }
 
         .logo-header {
@@ -86,7 +88,8 @@
             border: 2px solid #e2e8f0;
             border-radius: 10px;
             box-sizing: border-box;
-            font-size: 15px;
+            font-size: 16px;
+            /* Prevents auto-zoom on iOS */
             margin-bottom: 1.2rem;
             background-color: var(--card-bg);
             color: var(--text-color);
@@ -116,6 +119,7 @@
             transition: filter 0.2s, transform 0.1s;
             margin: 4px;
             font-weight: bold;
+            -webkit-tap-highlight-color: transparent;
         }
 
         button:hover {
@@ -188,24 +192,22 @@
             }
         }
 
-        /* Wordle-Style Tiles Container */
         .tiles-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin: 1.8rem 0;
+            gap: 8px;
+            margin: 1.5rem 0;
             flex-wrap: wrap;
             cursor: pointer;
             min-height: 58px;
             align-items: center;
         }
 
-        /* Wordle-Style Tile Formatting */
         .tile {
-            width: 44px;
-            height: 52px;
+            width: 42px;
+            height: 50px;
             border-radius: 8px;
-            font-size: 1.8rem;
+            font-size: 1.7rem;
             font-weight: 800;
             text-transform: uppercase;
             display: flex;
@@ -266,6 +268,7 @@
             opacity: 0;
             top: -1000px;
             left: -1000px;
+            pointer-events: none;
         }
 
         .feedback {
@@ -330,6 +333,27 @@
             pointer-events: none;
             z-index: 999;
         }
+
+        /* Mobile Viewport Adjustments */
+        @media (max-width: 600px) {
+            body {
+                align-items: flex-start;
+                padding: 10px;
+            }
+
+            .container {
+                padding: 1.2rem;
+                border-radius: 14px;
+                margin-top: 5px;
+                margin-bottom: 20px;
+            }
+
+            .tile {
+                width: 38px;
+                height: 46px;
+                font-size: 1.5rem;
+            }
+        }
     </style>
 </head>
 
@@ -337,7 +361,7 @@
 
     <canvas id="confetti-canvas"></canvas>
 
-    <div class="container">
+    <div class="container" id="game-container">
         <div class="top-nav">
             <button id="help-btn" class="nav-btn">❓ How to Play</button>
             <button id="settings-btn" class="nav-btn">⚙️ Advanced Settings</button>
@@ -386,7 +410,7 @@
             <div id="tiles-container" class="tiles-container"></div>
 
             <!-- Hidden input -->
-            <input type="text" id="hidden-input" autocomplete="off" spellcheck="false">
+            <input type="text" id="hidden-input" autocomplete="off" autocapitalize="off" spellcheck="false">
 
             <form id="answer-form">
                 <button type="submit" class="btn-main" style="margin-top: 5px;">Submit Answer (↵ Enter)</button>
@@ -417,9 +441,11 @@
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
                 <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.</li>
+                    <em>"🐢 Read Slow"</em> to listen again.
+                </li>
                 <li><strong>Spell:</strong> Type your answer using your keyboard. Click <strong>Submit</strong> or press
-                    <strong>Enter</strong>.</li>
+                    <strong>Enter</strong>.
+                </li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
                     appear with hints!</li>
                 <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
@@ -450,12 +476,15 @@
     </div>
 
     <script>
-        // Web Audio Synthesizer
+        // Web Audio Synthesizer (Crackles fixed with smooth linear ramps)
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
 
         function initAudio() {
             if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
         function playSound(type) {
@@ -468,8 +497,11 @@
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(400, now);
                 osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
-                gain.gain.setValueAtTime(0.08, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.04);
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.04, now + 0.01);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.04);
+
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start(now);
@@ -480,14 +512,18 @@
                 notes.forEach((freq, idx) => {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
+                    const noteTime = now + idx * 0.08;
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-                    gain.gain.setValueAtTime(0.15, now + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+                    osc.frequency.setValueAtTime(freq, noteTime);
+
+                    gain.gain.setValueAtTime(0.001, noteTime);
+                    gain.gain.linearRampToValueAtTime(0.08, noteTime + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.25);
+
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
-                    osc.start(now + idx * 0.08);
-                    osc.stop(now + idx * 0.08 + 0.25);
+                    osc.start(noteTime);
+                    osc.stop(noteTime + 0.25);
                 });
             }
             else if (type === 'wrong') {
@@ -496,8 +532,11 @@
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(160, now);
                 osc.frequency.linearRampToValueAtTime(110, now + 0.25);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+                gain.gain.linearRampToValueAtTime(0.001, now + 0.25);
+
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start(now);
@@ -508,14 +547,18 @@
                 notes.forEach((freq, idx) => {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
+                    const noteTime = now + idx * 0.12;
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-                    gain.gain.setValueAtTime(0.2, now + idx * 0.12);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.4);
+                    osc.frequency.setValueAtTime(freq, noteTime);
+
+                    gain.gain.setValueAtTime(0.001, noteTime);
+                    gain.gain.linearRampToValueAtTime(0.1, noteTime + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.4);
+
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
-                    osc.start(now + idx * 0.12);
-                    osc.stop(now + idx * 0.12 + 0.4);
+                    osc.start(noteTime);
+                    osc.stop(noteTime + 0.4);
                 });
             }
         }
@@ -816,9 +859,16 @@
             }
         });
 
+        // Mobile focus helper: scrolls tiles and input into view when focused
+        hiddenInput.addEventListener('focus', () => {
+            setTimeout(() => {
+                tilesContainer.scrollIntoView({behavior: 'smooth', block: 'center'});
+            }, 250);
+        });
+
         document.addEventListener('click', (e) => {
             if (!gameScreen.classList.contains('hidden')) {
-                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT') {
+                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
                     hiddenInput.focus();
                 }
             }
