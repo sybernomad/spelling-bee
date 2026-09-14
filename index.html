@@ -529,11 +529,9 @@
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
                 <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.
-                </li>
+                    <em>"🐢 Read Slow"</em> to listen again.</li>
                 <li><strong>Spell:</strong> Type using your keyboard or tap the onscreen letter buttons. Click
-                    <strong>Submit</strong> or press <strong>Enter</strong>.
-                </li>
+                    <strong>Submit</strong> or press <strong>Enter</strong>.</li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
                     appear with hints!</li>
                 <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
@@ -564,10 +562,6 @@
     </div>
 
     <script>
-        // Mobile-safe audio engine.
-        // IMPORTANT: speech is handled by the browser/OS SpeechSynthesis engine below.
-        // Web Audio is used only for very short UI feedback tones, which avoids
-        // creating/stopping streamed speech elements on every mobile interaction.
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let masterGain = null;
@@ -614,7 +608,6 @@
                 osc.frequency.linearRampToValueAtTime(endFreq, endTime);
             }
 
-            // Short equal-power-ish envelope prevents clicks and keeps mobile output modest.
             gain.gain.setValueAtTime(0.00001, startTime);
             gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, volume), startTime + Math.min(0.008, duration * 0.2));
             gain.gain.exponentialRampToValueAtTime(0.00001, endTime);
@@ -633,14 +626,11 @@
         }
 
         function playSound(type) {
-            // Do not start a new AudioContext from every tap. The context is created once,
-            // then resumed only after a real user gesture when needed.
             initAudio().then(ready => {
                 if (!ready || !audioCtx) return;
                 const now = audioCtx.currentTime;
 
                 if (type === 'type') {
-                    // Hard throttle typing clicks. This is especially important on phones.
                     if (now - lastTypeSoundTime < 0.055) return;
                     lastTypeSoundTime = now;
                     playTone(360, now, 0.024, 0.045, 'sine');
@@ -889,35 +879,137 @@
             reader.readAsText(file);
         });
 
+        // Speech Engine Configuration & Safe Async Loader
+        let speechRequestId = 0;
+        let speechUnlockStarted = false;
+        let speechVoicesReady = false;
+
+        function chooseBestVoice() {
+            if (!synth) return null;
+            const voices = synth.getVoices();
+            if (!voices.length) return null;
+
+            const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
+            const candidates = english.length ? english : voices;
+
+            const preferredNames = [
+                'Samantha', 'Karen', 'Daniel', 'Alex', 'Google US English',
+                'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Guy'
+            ];
+
+            for (const preferred of preferredNames) {
+                const exact = candidates.find(v => v.name.toLowerCase().includes(preferred.toLowerCase()));
+                if (exact) return exact;
+            }
+
+            const local = candidates.find(v => v.localService);
+            return local || candidates[0] || null;
+        }
+
         function populateVoices() {
             if (!synth) return;
             const voices = synth.getVoices();
+            if (!voices.length) return;
+
+            speechVoicesReady = true;
+            const currentName = voiceSelect.selectedOptions[0]?.getAttribute('data-name') || '';
+            const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
+            const displayList = english.length ? english : voices;
+            const best = chooseBestVoice();
+
             voiceSelect.innerHTML = '';
-
-            // Filter strictly for US English or general English voices
-            let usVoices = voices.filter(v => v.lang === 'en-US' || v.lang === 'en_US');
-            if (usVoices.length === 0) {
-                usVoices = voices.filter(v => v.lang.startsWith('en'));
-            }
-            const displayList = usVoices.length > 0 ? usVoices : voices;
-
             displayList.forEach((voice) => {
                 const option = document.createElement('option');
                 option.textContent = `${voice.name} (${voice.lang})`;
                 option.setAttribute('data-name', voice.name);
-
-                // Automatically select the first available en-US or default voice
-                if (voice.default || voice.lang.includes('en-US')) {
-                    option.selected = true;
-                }
-
                 voiceSelect.appendChild(option);
             });
+
+            if (currentName && displayList.some(v => v.name === currentName)) {
+                voiceSelect.value = displayList.find(v => v.name === currentName).name;
+            } else if (best) {
+                voiceSelect.value = best.name;
+            }
+
+            selectedVoice = displayList.find(v => v.name === voiceSelect.value) || best || null;
         }
+
         voiceSelect.addEventListener('change', () => {
             selectedVoice = resolveSelectedVoice();
         });
 
+        if (synth) {
+            populateVoices();
+            if (synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = populateVoices;
+            }
+        }
+
+        function unlockSpeech() {
+            if (!synth || speechUnlockStarted) return;
+            speechUnlockStarted = true;
+
+            try {
+                synth.cancel();
+                const primer = new SpeechSynthesisUtterance('');
+                primer.volume = 0;
+                primer.rate = 1;
+                primer.pitch = 1;
+                synth.speak(primer);
+            } catch (err) {
+                console.warn('Speech unlock failed:', err);
+            }
+        }
+
+        function resolveSelectedVoice() {
+            if (!synth) return null;
+            const desiredName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
+            const voices = synth.getVoices();
+            return voices.find(v => v.name === desiredName) || selectedVoice || chooseBestVoice();
+        }
+
+        function speakPhrase(phrase, slowDown = false) {
+            if (!phrase) return;
+            if (!synth) {
+                console.warn('SpeechSynthesis is not available in this browser.');
+                return;
+            }
+
+            const requestId = ++speechRequestId;
+            const text = String(phrase).trim();
+            if (!text) return;
+
+            try {
+                synth.cancel();
+            } catch (_) { }
+
+            const voice = resolveSelectedVoice();
+            selectedVoice = voice;
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = voice?.lang || 'en-US';
+            if (voice) utterance.voice = voice;
+            utterance.rate = slowDown ? 0.72 : 0.95;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            utterance.onend = () => {
+                if (requestId !== speechRequestId) return;
+            };
+            utterance.onerror = (event) => {
+                if (requestId !== speechRequestId) return;
+                console.warn('Speech synthesis error:', event.error || event);
+            };
+
+            window.setTimeout(() => {
+                if (requestId !== speechRequestId) return;
+                try {
+                    synth.speak(utterance);
+                } catch (err) {
+                    console.warn('Speech synthesis failed:', err);
+                }
+            }, 30);
+        }
 
         startBtn.addEventListener('click', () => {
             unlockSpeech();
@@ -975,8 +1067,6 @@
         });
 
         document.addEventListener('pointerdown', (e) => {
-            // This is a real user gesture on mobile, so it is a good place to unlock
-            // both native speech and the small Web Audio feedback engine.
             unlockSpeech();
             initAudio();
 
@@ -1105,135 +1195,6 @@
             }
 
             speakPhrase(words[currentIndex], false);
-        }
-
-        // Mobile-first speech engine.
-        // Use the device/browser's native speech synthesizer instead of streaming an
-        // undocumented third-party TTS URL. Native speech avoids network buffering,
-        // low-bitrate streaming artifacts, and playbackRate distortion on phones.
-        let speechRequestId = 0;
-        let speechUnlockStarted = false;
-        let speechVoicesReady = false;
-
-        function chooseBestVoice() {
-            if (!synth) return null;
-            const voices = synth.getVoices();
-            if (!voices.length) return null;
-
-            const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
-            const candidates = english.length ? english : voices;
-
-            // Prefer high-quality/local voices where the browser exposes that metadata.
-            const preferredNames = [
-                'Samantha', 'Karen', 'Daniel', 'Alex', 'Google US English',
-                'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Guy'
-            ];
-
-            for (const preferred of preferredNames) {
-                const exact = candidates.find(v => v.name.toLowerCase().includes(preferred.toLowerCase()));
-                if (exact) return exact;
-            }
-
-            const local = candidates.find(v => v.localService);
-            return local || candidates[0] || null;
-        }
-
-        function populateVoices() {
-            if (!synth) return;
-            const voices = synth.getVoices();
-            if (!voices.length) return;
-
-            speechVoicesReady = true;
-            const currentName = voiceSelect.selectedOptions[0]?.getAttribute('data-name') || '';
-            const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
-            const displayList = english.length ? english : voices;
-            const best = chooseBestVoice();
-
-            voiceSelect.innerHTML = '';
-            displayList.forEach((voice) => {
-                const option = document.createElement('option');
-                option.textContent = `${voice.name} (${voice.lang})`;
-                option.setAttribute('data-name', voice.name);
-                voiceSelect.appendChild(option);
-            });
-
-            if (currentName && displayList.some(v => v.name === currentName)) {
-                voiceSelect.value = displayList.find(v => v.name === currentName).name;
-            } else if (best) {
-                voiceSelect.value = best.name;
-            }
-
-            selectedVoice = displayList.find(v => v.name === voiceSelect.value) || best || null;
-        }
-
-        // iOS/Safari can require SpeechSynthesis to be touched from a user gesture before
-        // later programmatic speech calls work reliably. Prime it once, silently, on input.
-        function unlockSpeech() {
-            if (!synth || speechUnlockStarted) return;
-            speechUnlockStarted = true;
-
-            try {
-                synth.cancel();
-                const primer = new SpeechSynthesisUtterance('');
-                primer.volume = 0;
-                primer.rate = 1;
-                primer.pitch = 1;
-                synth.speak(primer);
-            } catch (err) {
-                console.warn('Speech unlock failed:', err);
-            }
-        }
-
-        function resolveSelectedVoice() {
-            if (!synth) return null;
-            const desiredName = voiceSelect.selectedOptions[0]?.getAttribute('data-name');
-            const voices = synth.getVoices();
-            return voices.find(v => v.name === desiredName) || selectedVoice || chooseBestVoice();
-        }
-
-        function speakPhrase(phrase, slowDown = false) {
-            if (!phrase) return;
-            if (!synth) {
-                console.warn('SpeechSynthesis is not available in this browser.');
-                return;
-            }
-
-            const requestId = ++speechRequestId;
-            const text = String(phrase).trim();
-            if (!text) return;
-
-            try {
-                synth.cancel();
-            } catch (_) { }
-
-            const voice = resolveSelectedVoice();
-            selectedVoice = voice;
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = voice?.lang || 'en-US';
-            if (voice) utterance.voice = voice;
-            utterance.rate = slowDown ? 0.72 : 0.95;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-
-            utterance.onend = () => {
-                if (requestId !== speechRequestId) return;
-            };
-            utterance.onerror = (event) => {
-                if (requestId !== speechRequestId) return;
-                console.warn('Speech synthesis error:', event.error || event);
-            };
-
-            // A tiny deferred speak helps some mobile engines finish processing the cancel()
-            // before the new utterance is queued.
-            window.setTimeout(() => {
-                if (requestId !== speechRequestId) return;
-                try {
-                    synth.speak(utterance);
-                } catch (err) {
-                    console.warn('Speech synthesis failed:', err);
-                }
-            }, 30);
         }
 
         function handleAnswerSubmit(e) {
