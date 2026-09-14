@@ -563,25 +563,19 @@
     </div>
 
     <script>
-        // Click-Free Exponential Audio Engine for Mobile
+        // Revamped Master-Capped Click-Free Mobile Audio Engine
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
-        let persistentOsc = null;
-        let persistentGain = null;
+        let masterGain = null;
         let lastTypeSoundTime = 0;
 
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new AudioContext();
-                try {
-                    persistentOsc = audioCtx.createOscillator();
-                    persistentGain = audioCtx.createGain();
-                    persistentOsc.type = 'sine';
-                    persistentGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-                    persistentOsc.connect(persistentGain);
-                    persistentGain.connect(audioCtx.destination);
-                    persistentOsc.start();
-                } catch (e) { }
+                // Create a master volume limiter to completely prevent mobile speaker distortion/crackling
+                masterGain = audioCtx.createGain();
+                masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime); // Hard cap at 30% master volume
+                masterGain.connect(audioCtx.destination);
             }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
@@ -589,40 +583,46 @@
         }
 
         function playSound(type) {
-            if (!audioCtx) return;
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            initAudio();
+            if (!audioCtx || audioCtx.state !== 'running') return;
             const now = audioCtx.currentTime;
 
             if (type === 'type') {
-                if (now - lastTypeSoundTime < 0.04) return;
+                if (now - lastTypeSoundTime < 0.05) return;
                 lastTypeSoundTime = now;
 
-                if (persistentGain) {
-                    persistentGain.gain.cancelScheduledValues(now);
-                    persistentGain.gain.setValueAtTime(0.0001, now);
-                    persistentGain.gain.exponentialRampToValueAtTime(0.02, now + 0.008);
-                    persistentGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
-                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.exponentialRampToValueAtTime(0.04, now + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now);
+                osc.stop(now + 0.035);
+                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 50);
             }
             else if (type === 'correct') {
                 const notes = [523.25, 659.25, 783.99];
                 notes.forEach((freq, idx) => {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
-                    const noteTime = now + idx * 0.08;
+                    const t = now + idx * 0.08;
                     osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, noteTime);
+                    osc.frequency.setValueAtTime(freq, t);
 
-                    gain.gain.setValueAtTime(0.0001, noteTime);
-                    gain.gain.exponentialRampToValueAtTime(0.06, noteTime + 0.012);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.25);
+                    gain.gain.setValueAtTime(0.0001, t);
+                    gain.gain.exponentialRampToValueAtTime(0.06, t + 0.012);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
 
                     osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(noteTime);
-                    osc.stop(noteTime + 0.25);
+                    gain.connect(masterGain);
+                    osc.start(t);
+                    osc.stop(t + 0.25);
                     setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.08 + 0.3) * 1000);
                 });
             }
@@ -630,15 +630,15 @@
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(160, now);
-                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
 
                 gain.gain.setValueAtTime(0.0001, now);
-                gain.gain.exponentialRampToValueAtTime(0.06, now + 0.015);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+                gain.gain.exponentialRampToValueAtTime(0.06, now + 0.012);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
 
                 osc.connect(gain);
-                gain.connect(audioCtx.destination);
+                gain.connect(masterGain);
                 osc.start(now);
                 osc.stop(now + 0.25);
                 setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 300);
@@ -648,18 +648,18 @@
                 notes.forEach((freq, idx) => {
                     const osc = audioCtx.createOscillator();
                     const gain = audioCtx.createGain();
-                    const noteTime = now + idx * 0.12;
+                    const t = now + idx * 0.12;
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, noteTime);
+                    osc.frequency.setValueAtTime(freq, t);
 
-                    gain.gain.setValueAtTime(0.0001, noteTime);
-                    gain.gain.exponentialRampToValueAtTime(0.08, noteTime + 0.015);
-                    gain.gain.exponentialRampToValueAtTime(0.0001, noteTime + 0.4);
+                    gain.gain.setValueAtTime(0.0001, t);
+                    gain.gain.exponentialRampToValueAtTime(0.08, t + 0.015);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
 
                     osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start(noteTime);
-                    osc.stop(noteTime + 0.4);
+                    gain.connect(masterGain);
+                    osc.start(t);
+                    osc.stop(t + 0.4);
                     setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.12 + 0.5) * 1000);
                 });
             }
