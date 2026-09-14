@@ -339,7 +339,6 @@
             font-weight: bold;
         }
 
-        /* Modal Box Styling */
         .modal {
             position: fixed;
             top: 0;
@@ -378,7 +377,6 @@
             z-index: 999;
         }
 
-        /* Mobile Viewport Adjustments */
         @media (max-width: 600px) {
             body {
                 align-items: flex-start;
@@ -423,7 +421,6 @@
             <button id="settings-btn" class="nav-btn">⚙️ Advanced Settings</button>
         </div>
 
-        <!-- External SVG Logo Header -->
         <img src="logo.svg" alt="Spelling Bee Logo" class="logo-header">
 
         <!-- Setup Screen -->
@@ -462,11 +459,10 @@
                 <button id="slow-btn" class="btn-hint">🐢 Read Slow</button>
             </div>
 
-            <!-- Dynamic Tiles -->
             <div id="tiles-container" class="tiles-container"></div>
 
-            <!-- Hidden input for physical desktop keyboards -->
-            <input type="text" id="hidden-input" autocomplete="off" autocapitalize="off" spellcheck="false">
+            <input type="text" id="hidden-input" inputmode="none" autocomplete="off" autocapitalize="off"
+                spellcheck="false">
 
             <div class="virtual-keyboard" id="virtual-keyboard">
                 <div class="keyboard-row">
@@ -535,11 +531,9 @@
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
                 <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.
-                </li>
+                    <em>"🐢 Read Slow"</em> to listen again.</li>
                 <li><strong>Spell:</strong> Type using your keyboard or tap the onscreen letter buttons. Click
-                    <strong>Submit</strong> or press <strong>Enter</strong>.
-                </li>
+                    <strong>Submit</strong> or press <strong>Enter</strong>.</li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
                     appear with hints!</li>
                 <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
@@ -570,12 +564,29 @@
     </div>
 
     <script>
-        // Web Audio Synthesizer (Crackles fixed with smooth linear ramps)
+        // Optimized Persistent Audio Architecture for Mobile
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
+        let persistentOsc = null;
+        let persistentGain = null;
+        let lastTypeSoundTime = 0;
 
         function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+                // Create a persistent single-oscillator/gain routing setup for rapid typing feedback
+                try {
+                    persistentOsc = audioCtx.createOscillator();
+                    persistentGain = audioCtx.createGain();
+                    persistentOsc.type = 'sine';
+                    persistentGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    persistentOsc.connect(persistentGain);
+                    persistentGain.connect(audioCtx.destination);
+                    persistentOsc.start();
+                } catch (e) {
+                    console.log('Persistent audio setup fallback enabled');
+                }
+            }
             if (audioCtx.state === 'suspended') {
                 audioCtx.resume();
             }
@@ -583,23 +594,21 @@
 
         function playSound(type) {
             if (!audioCtx) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
             const now = audioCtx.currentTime;
 
             if (type === 'type') {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, now);
-                osc.frequency.exponentialRampToValueAtTime(800, now + 0.04);
+                if (now - lastTypeSoundTime < 0.04) return;
+                lastTypeSoundTime = now;
 
-                gain.gain.setValueAtTime(0.001, now);
-                gain.gain.linearRampToValueAtTime(0.04, now + 0.01);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.04);
-
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start(now);
-                osc.stop(now + 0.04);
+                if (persistentGain) {
+                    persistentGain.gain.cancelScheduledValues(now);
+                    persistentGain.gain.setValueAtTime(0.001, now);
+                    persistentGain.gain.linearRampToValueAtTime(0.03, now + 0.008);
+                    persistentGain.gain.linearRampToValueAtTime(0.001, now + 0.03);
+                }
             }
             else if (type === 'correct') {
                 const notes = [523.25, 659.25, 783.99];
@@ -611,13 +620,14 @@
                     osc.frequency.setValueAtTime(freq, noteTime);
 
                     gain.gain.setValueAtTime(0.001, noteTime);
-                    gain.gain.linearRampToValueAtTime(0.08, noteTime + 0.01);
+                    gain.gain.linearRampToValueAtTime(0.06, noteTime + 0.01);
                     gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.25);
 
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
                     osc.start(noteTime);
                     osc.stop(noteTime + 0.25);
+                    setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.08 + 0.3) * 1000);
                 });
             }
             else if (type === 'wrong') {
@@ -628,13 +638,14 @@
                 osc.frequency.linearRampToValueAtTime(110, now + 0.25);
 
                 gain.gain.setValueAtTime(0.001, now);
-                gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
+                gain.gain.linearRampToValueAtTime(0.06, now + 0.02);
                 gain.gain.linearRampToValueAtTime(0.001, now + 0.25);
 
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start(now);
                 osc.stop(now + 0.25);
+                setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, 300);
             }
             else if (type === 'victory') {
                 const notes = [440, 554.37, 659.25, 880];
@@ -646,13 +657,14 @@
                     osc.frequency.setValueAtTime(freq, noteTime);
 
                     gain.gain.setValueAtTime(0.001, noteTime);
-                    gain.gain.linearRampToValueAtTime(0.1, noteTime + 0.02);
+                    gain.gain.linearRampToValueAtTime(0.08, noteTime + 0.02);
                     gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.4);
 
                     osc.connect(gain);
                     gain.connect(audioCtx.destination);
                     osc.start(noteTime);
                     osc.stop(noteTime + 0.4);
+                    setTimeout(() => {try {osc.disconnect(); gain.disconnect();} catch (e) { } }, (idx * 0.12 + 0.5) * 1000);
                 });
             }
         }
@@ -705,7 +717,6 @@
             if (active) requestAnimationFrame(animateConfetti);
         }
 
-        // Fisher-Yates Shuffle Algorithm
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -714,7 +725,6 @@
             return array;
         }
 
-        // Game State Variables
         let words = [];
         let rawActiveList = [];
         let missedWords = [];
@@ -734,7 +744,6 @@
 
         const synth = window.speechSynthesis;
 
-        // DOM Elements
         const serverListSelect = document.getElementById('server-list-select');
         const setupScreen = document.getElementById('setup-screen');
         const gameScreen = document.getElementById('game-screen');
@@ -776,14 +785,12 @@
         const answerForm = document.getElementById('answer-form');
         const virtualKeyboard = document.getElementById('virtual-keyboard');
 
-        // Modals Toggle
         helpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
         closeHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
 
         settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
         closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
 
-        // Load Server Manifest for Weekly Preset Dropdown
         async function loadServerManifest() {
             try {
                 const response = await fetch('word-lists/manifest.json');
@@ -807,7 +814,6 @@
         }
         loadServerManifest();
 
-        // Handle Server List Selection
         serverListSelect.addEventListener('change', async (e) => {
             const selectedFile = e.target.value;
             if (selectedFile === 'custom') return;
@@ -824,7 +830,6 @@
             }
         });
 
-        // Save New Word List (JSON Export with Custom Name Prompt)
         exportBtn.addEventListener('click', () => {
             const rawText = wordInput.value.trim();
             if (!rawText) {
@@ -947,7 +952,6 @@
         reviewBtn.addEventListener('click', startReviewMode);
         answerForm.addEventListener('submit', handleAnswerSubmit);
 
-        // Physical desktop keyboard listener
         hiddenInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -955,7 +959,6 @@
             }
         });
 
-        // Virtual Onscreen Keyboard Click Handler
         virtualKeyboard.addEventListener('click', (e) => {
             const keyBtn = e.target.closest('.key');
             if (!keyBtn) return;
@@ -970,10 +973,9 @@
                     updateTilesDisplay();
                 }
             } else {
-                // Check if max length applies during attempt 3
                 const targetWord = words[currentIndex] || '';
                 if (currentAttempts < maxAttempts && hiddenInput.value.length >= targetWord.length) {
-                    return; // Don't overflow fixed tile grid
+                    return;
                 }
                 hiddenInput.value += keyValue;
                 playSound('type');
@@ -982,9 +984,12 @@
         });
 
         document.addEventListener('click', (e) => {
+            initAudio(); // Ensures user gesture unlocks context anywhere
             if (!gameScreen.classList.contains('hidden')) {
-                if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                    hiddenInput.focus();
+                if (!window.matchMedia("(pointer: coarse)").matches) {
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                        hiddenInput.focus();
+                    }
                 }
             }
         });
@@ -1003,7 +1008,6 @@
             }
 
             const listToUse = customList ? customList : rawActiveList;
-
             words = shuffleArray([...listToUse]);
 
             if (!customList) missedWords = [];
@@ -1102,7 +1106,10 @@
             hiddenInput.removeAttribute('maxlength');
             hiddenInput.value = '';
             updateTilesDisplay();
-            hiddenInput.focus();
+
+            if (!window.matchMedia("(pointer: coarse)").matches) {
+                hiddenInput.focus();
+            }
 
             speakPhrase(words[currentIndex], 0.85);
         }
@@ -1188,7 +1195,9 @@
                         createFixedGrid(correctSpelling.length);
                         hiddenInput.value = '';
                         updateTilesDisplay();
-                        hiddenInput.focus();
+                        if (!window.matchMedia("(pointer: coarse)").matches) {
+                            hiddenInput.focus();
+                        }
 
                         speakPhrase(words[currentIndex], 0.55);
                     }, 1200);
