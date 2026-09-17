@@ -989,7 +989,7 @@
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = voice?.lang || 'en-US';
             if (voice) utterance.voice = voice;
-            utterance.rate = slowDown ? 0.72 : 0.95;
+            utterance.rate = slowDown ? 0.60 : 0.95;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
 
