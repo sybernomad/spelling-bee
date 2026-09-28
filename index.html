@@ -883,6 +883,17 @@
         let speechRequestId = 0;
         let speechUnlockStarted = false;
         let speechVoicesReady = false;
+        let userChoseVoice = false;
+        let populatingVoices = false;
+
+        function normalizeVoiceLang(lang) {
+            return String(lang || '').replace(/_/g, '-').toLowerCase();
+        }
+
+        function isUsEnglishVoice(voice) {
+            const lang = normalizeVoiceLang(voice.lang);
+            return lang === 'en-us' || lang.startsWith('en-us-');
+        }
 
         function chooseBestVoice() {
             if (!synth) return null;
@@ -891,19 +902,28 @@
 
             const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
             const candidates = english.length ? english : voices;
+            // Mobile browsers list region voices such as "English Australia" (en_AU)
+            // ahead of "English United States" (en_US). Prefer United States English.
+            const usEnglish = candidates.filter(isUsEnglishVoice);
+            const pool = usEnglish.length ? usEnglish : candidates;
 
             const preferredNames = [
-                'Samantha', 'Karen', 'Daniel', 'Alex', 'Google US English',
-                'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Guy'
+                'English United States',
+                'Google US English',
+                'Samantha',
+                'Alex',
+                'Microsoft Aria',
+                'Microsoft Jenny',
+                'Microsoft Guy'
             ];
 
             for (const preferred of preferredNames) {
-                const exact = candidates.find(v => v.name.toLowerCase().includes(preferred.toLowerCase()));
+                const exact = pool.find(v => v.name.toLowerCase().includes(preferred.toLowerCase()));
                 if (exact) return exact;
             }
 
-            const local = candidates.find(v => v.localService);
-            return local || candidates[0] || null;
+            const local = pool.find(v => v.localService);
+            return local || pool[0] || null;
         }
 
         function populateVoices() {
@@ -912,29 +932,36 @@
             if (!voices.length) return;
 
             speechVoicesReady = true;
-            const currentName = voiceSelect.selectedOptions[0]?.getAttribute('data-name') || '';
+            const previousName = userChoseVoice
+                ? (voiceSelect.selectedOptions[0]?.getAttribute('data-name') || '')
+                : '';
             const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
             const displayList = english.length ? english : voices;
             const best = chooseBestVoice();
 
+            populatingVoices = true;
             voiceSelect.innerHTML = '';
             displayList.forEach((voice) => {
                 const option = document.createElement('option');
+                option.value = voice.name;
                 option.textContent = `${voice.name} (${voice.lang})`;
                 option.setAttribute('data-name', voice.name);
                 voiceSelect.appendChild(option);
             });
 
-            if (currentName && displayList.some(v => v.name === currentName)) {
-                voiceSelect.value = displayList.find(v => v.name === currentName).name;
-            } else if (best) {
-                voiceSelect.value = best.name;
+            const restored = previousName && displayList.find(v => v.name === previousName);
+            const chosen = restored || best;
+            if (chosen) {
+                voiceSelect.value = chosen.name;
             }
+            populatingVoices = false;
 
-            selectedVoice = displayList.find(v => v.name === voiceSelect.value) || best || null;
+            selectedVoice = displayList.find(v => v.name === voiceSelect.value) || chosen || null;
         }
 
         voiceSelect.addEventListener('change', () => {
+            if (populatingVoices) return;
+            userChoseVoice = true;
             selectedVoice = resolveSelectedVoice();
         });
 
