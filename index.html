@@ -330,6 +330,90 @@
             color: var(--error-color);
         }
 
+        .field-hint {
+            text-align: left;
+            font-size: 0.85rem;
+            color: #5d6d7e;
+            margin: -0.6rem 0 1rem;
+            line-height: 1.4;
+        }
+
+        .field-hint code {
+            font-size: 0.8rem;
+        }
+
+        .screen-title {
+            margin: 0 0 0.35rem;
+            font-size: 1.4rem;
+        }
+
+        .learn-kicker {
+            margin: 0 0 0.8rem;
+            color: #5d6d7e;
+            line-height: 1.4;
+        }
+
+        .learn-sentence {
+            font-size: 1.15rem;
+            line-height: 1.5;
+            margin: 0.2rem 0 1rem;
+            min-height: 3.2rem;
+        }
+
+        .context-word {
+            color: var(--primary-border);
+        }
+
+        .context-line {
+            background: #f4f8ff;
+            border: 2px solid #d6e6fa;
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin: 0 0 0.2rem;
+            text-align: left;
+            line-height: 1.45;
+        }
+
+        .context-label {
+            display: block;
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #5d6d7e;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .context-text {
+            display: block;
+            font-size: 1.05rem;
+        }
+
+        .context-blank {
+            color: var(--primary-border);
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .learn-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 0.8rem;
+        }
+
+        .learn-actions button {
+            width: 100%;
+            margin: 0;
+        }
+
         .high-score-box {
             background: rgba(241, 196, 15, 0.15);
             border: 2px dashed var(--primary-border);
@@ -434,7 +518,8 @@
             </select>
 
             <label for="word-input">Word List (separated by commas or lines):</label>
-            <textarea id="word-input" placeholder="apple, banana, cherry&#10;elephant"></textarea>
+            <textarea id="word-input" placeholder="apple, banana, cherry&#10;wait | Please wait for your turn."></textarea>
+            <p class="field-hint">Words that sound the same need a sentence so the spelling is clear. Put one word on each line, then a <code>|</code>, then the sentence.</p>
 
             <div id="saved-score-display" class="high-score-box hidden"></div>
 
@@ -442,6 +527,26 @@
                 <button id="start-btn" class="btn-main" style="font-size: 1.1rem; padding: 14px 28px;">Start Game
                     🚀</button>
                 <button id="export-btn" class="btn-save">💾 Save New Word List</button>
+            </div>
+        </div>
+
+        <!-- Learn Screen -->
+        <div id="learn-screen" class="hidden">
+            <h2 class="screen-title">Learn the words</h2>
+            <p id="learn-kicker" class="learn-kicker">Listen, look at the spelling, then hear the word in a sentence.</p>
+            <div class="status-bar">
+                <div>Word <span id="learn-progress">1</span> of <span id="learn-total">1</span></div>
+            </div>
+            <div id="learn-tiles" class="tiles-container"></div>
+            <p id="learn-sentence" class="learn-sentence"></p>
+            <div class="button-row">
+                <button id="learn-hear-btn" type="button" class="btn-secondary">🔊 Hear Word</button>
+                <button id="learn-slow-btn" type="button" class="btn-hint">🐢 Read Slow</button>
+            </div>
+            <div class="learn-actions">
+                <button id="learn-next-btn" type="button" class="btn-main">Next Word</button>
+                <button id="learn-skip-btn" type="button" class="btn-action">Skip to Spelling</button>
+                <button id="learn-back-btn" type="button" class="btn-secondary">Back to Lists</button>
             </div>
         </div>
 
@@ -454,10 +559,15 @@
                 <div>⏱️ <span id="timer">0s</span></div>
             </div>
 
-            <div style="margin-bottom: 0.8rem;">
-                <button id="repeat-btn" class="btn-secondary">🔊 Hear Word</button>
-                <button id="slow-btn" class="btn-hint">🐢 Read Slow</button>
+            <div class="button-row" style="margin-bottom: 0.8rem;">
+                <button id="repeat-btn" type="button" class="btn-secondary">🔊 Hear Word</button>
+                <button id="slow-btn" type="button" class="btn-hint">🐢 Read Slow</button>
             </div>
+
+            <p id="context-line" class="context-line hidden">
+                <span id="context-label" class="context-label">Use it in a sentence</span>
+                <span id="context-text" class="context-text"></span>
+            </p>
 
             <div id="tiles-container" class="tiles-container"></div>
 
@@ -466,37 +576,37 @@
 
             <div class="virtual-keyboard" id="virtual-keyboard">
                 <div class="keyboard-row">
-                    <button class="key" data-key="q">q</button>
-                    <button class="key" data-key="w">w</button>
-                    <button class="key" data-key="e">e</button>
-                    <button class="key" data-key="r">r</button>
-                    <button class="key" data-key="t">t</button>
-                    <button class="key" data-key="y">y</button>
-                    <button class="key" data-key="u">u</button>
-                    <button class="key" data-key="i">i</button>
-                    <button class="key" data-key="o">o</button>
-                    <button class="key" data-key="p">p</button>
+                    <button type="button" class="key" data-key="q">q</button>
+                    <button type="button" class="key" data-key="w">w</button>
+                    <button type="button" class="key" data-key="e">e</button>
+                    <button type="button" class="key" data-key="r">r</button>
+                    <button type="button" class="key" data-key="t">t</button>
+                    <button type="button" class="key" data-key="y">y</button>
+                    <button type="button" class="key" data-key="u">u</button>
+                    <button type="button" class="key" data-key="i">i</button>
+                    <button type="button" class="key" data-key="o">o</button>
+                    <button type="button" class="key" data-key="p">p</button>
                 </div>
                 <div class="keyboard-row">
-                    <button class="key" data-key="a">a</button>
-                    <button class="key" data-key="s">s</button>
-                    <button class="key" data-key="d">d</button>
-                    <button class="key" data-key="f">f</button>
-                    <button class="key" data-key="g">g</button>
-                    <button class="key" data-key="h">h</button>
-                    <button class="key" data-key="j">j</button>
-                    <button class="key" data-key="k">k</button>
-                    <button class="key" data-key="l">l</button>
+                    <button type="button" class="key" data-key="a">a</button>
+                    <button type="button" class="key" data-key="s">s</button>
+                    <button type="button" class="key" data-key="d">d</button>
+                    <button type="button" class="key" data-key="f">f</button>
+                    <button type="button" class="key" data-key="g">g</button>
+                    <button type="button" class="key" data-key="h">h</button>
+                    <button type="button" class="key" data-key="j">j</button>
+                    <button type="button" class="key" data-key="k">k</button>
+                    <button type="button" class="key" data-key="l">l</button>
                 </div>
                 <div class="keyboard-row">
-                    <button class="key" data-key="z">z</button>
-                    <button class="key" data-key="x">x</button>
-                    <button class="key" data-key="c">c</button>
-                    <button class="key" data-key="v">v</button>
-                    <button class="key" data-key="b">b</button>
-                    <button class="key" data-key="n">n</button>
-                    <button class="key" data-key="m">m</button>
-                    <button class="key wide" data-key="BACK">⌫</button>
+                    <button type="button" class="key" data-key="z">z</button>
+                    <button type="button" class="key" data-key="x">x</button>
+                    <button type="button" class="key" data-key="c">c</button>
+                    <button type="button" class="key" data-key="v">v</button>
+                    <button type="button" class="key" data-key="b">b</button>
+                    <button type="button" class="key" data-key="n">n</button>
+                    <button type="button" class="key" data-key="m">m</button>
+                    <button type="button" class="key wide" data-key="BACK">⌫</button>
                 </div>
             </div>
 
@@ -528,8 +638,11 @@
         <div class="modal-content">
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
-                <li><strong>Listen:</strong> The game will read a word out loud. Click <em>"🔊 Hear Word"</em> or
-                    <em>"🐢 Read Slow"</em> to listen again.</li>
+                <li><strong>Learn:</strong> The game shows each spelling first. It says the word, spells the letters,
+                    and reads a sentence when the list has one.</li>
+                <li><strong>Listen:</strong> Then the quiz begins. <em>"🔊 Hear Word"</em> and <em>"🐢 Read Slow"</em>
+                    play the word again. If two words sound the same, the sentence tells you which spelling to use.
+                    The word is hidden in the sentence on screen.</li>
                 <li><strong>Spell:</strong> Type using your keyboard or tap the onscreen letter buttons. Click
                     <strong>Submit</strong> or press <strong>Enter</strong>.</li>
                 <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
@@ -725,6 +838,7 @@
 
         const serverListSelect = document.getElementById('server-list-select');
         const setupScreen = document.getElementById('setup-screen');
+        const learnScreen = document.getElementById('learn-screen');
         const gameScreen = document.getElementById('game-screen');
         const endScreen = document.getElementById('end-screen');
 
@@ -760,6 +874,19 @@
         const exportBtn = document.getElementById('export-btn');
         const repeatBtn = document.getElementById('repeat-btn');
         const slowBtn = document.getElementById('slow-btn');
+        const learnProgressEl = document.getElementById('learn-progress');
+        const learnTotalEl = document.getElementById('learn-total');
+        const learnKickerEl = document.getElementById('learn-kicker');
+        const learnTiles = document.getElementById('learn-tiles');
+        const learnSentenceEl = document.getElementById('learn-sentence');
+        const learnHearBtn = document.getElementById('learn-hear-btn');
+        const learnSlowBtn = document.getElementById('learn-slow-btn');
+        const learnNextBtn = document.getElementById('learn-next-btn');
+        const learnSkipBtn = document.getElementById('learn-skip-btn');
+        const learnBackBtn = document.getElementById('learn-back-btn');
+        const contextLine = document.getElementById('context-line');
+        const contextLabel = document.getElementById('context-label');
+        const contextText = document.getElementById('context-text');
         const restartBtn = document.getElementById('restart-btn');
         const answerForm = document.getElementById('answer-form');
         const virtualKeyboard = document.getElementById('virtual-keyboard');
@@ -801,8 +928,9 @@
                 const response = await fetch(`word-lists/${selectedFile}`);
                 if (!response.ok) throw new Error('File not found');
 
-                const list = await response.json();
-                wordInput.value = list.join(', ');
+                const entries = normalizeList(await response.json());
+                if (!entries.length) throw new Error('Empty list');
+                wordInput.value = formatListForEditor(entries);
                 updateHighScoreDisplay();
             } catch (err) {
                 alert(`Could not load server list: ${selectedFile}`);
@@ -816,11 +944,9 @@
                 return;
             }
 
-            const exportWords = rawText.split(/[\n,]+/)
-                .map(w => w.trim())
-                .filter(w => w.length > 0);
+            const exportEntries = parseEditorText(rawText);
 
-            if (exportWords.length === 0) {
+            if (exportEntries.length === 0) {
                 alert('No valid words found to save.');
                 return;
             }
@@ -829,7 +955,10 @@
             if (!userChosenName) return;
 
             const fileName = userChosenName.toLowerCase().replace(/\s+/g, '-').replace(/\.json$/i, '') + '.json';
-            const jsonData = JSON.stringify(exportWords, null, 2);
+            const exportPayload = exportEntries.some(entry => entry.sentence)
+                ? exportEntries.map(entry => ({word: entry.word, sentence: entry.sentence}))
+                : exportEntries.map(entry => entry.word);
+            const jsonData = JSON.stringify(exportPayload, null, 2);
 
             const blob = new Blob([jsonData], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
@@ -864,13 +993,13 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
-                    const wordList = JSON.parse(e.target.result);
-                    if (Array.isArray(wordList)) {
-                        wordInput.value = wordList.join(', ');
+                    const entries = normalizeList(JSON.parse(e.target.result));
+                    if (entries.length) {
+                        wordInput.value = formatListForEditor(entries);
                         settingsModal.classList.add('hidden');
                         updateHighScoreDisplay();
                     } else {
-                        alert('JSON file must contain an array of words!');
+                        alert('JSON file must contain a list of words.');
                     }
                 } catch (err) {
                     alert('Invalid JSON file format.');
@@ -972,17 +1101,168 @@
             }
         }
 
+        let learnEntries = [];
+        let learnIndex = 0;
+        let retrySerial = 0;
+        let activeUtterance = null;
+        let speakTimer = null;
+        let speechWatch = null;
+
+        function normalizeList(raw) {
+            if (!Array.isArray(raw)) return [];
+            const entries = [];
+            raw.forEach(item => {
+                if (typeof item === 'string') {
+                    const word = item.trim();
+                    if (word) entries.push({word, sentence: ''});
+                    return;
+                }
+                if (item && typeof item === 'object') {
+                    const word = String(item.word || '').trim();
+                    const sentence = String(item.sentence || '').trim();
+                    if (word) entries.push({word, sentence});
+                }
+            });
+            return entries;
+        }
+
+        function formatListForEditor(entries) {
+            if (entries.some(entry => entry.sentence)) {
+                return entries
+                    .map(entry => entry.sentence ? `${entry.word} | ${entry.sentence}` : entry.word)
+                    .join('\n');
+            }
+            return entries.map(entry => entry.word).join(', ');
+        }
+
+        function parseEditorText(rawText) {
+            const trimmed = String(rawText || '').trim();
+            if (!trimmed) return [];
+
+            const lines = trimmed.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+            const usesContext = lines.some(line => line.includes('|'));
+            if (usesContext) {
+                return lines.map(line => {
+                    const pipe = line.indexOf('|');
+                    if (pipe === -1) {
+                        const word = line.trim();
+                        return word ? {word, sentence: ''} : null;
+                    }
+                    const word = line.slice(0, pipe).trim();
+                    const sentence = line.slice(pipe + 1).trim();
+                    return word ? {word, sentence} : null;
+                }).filter(Boolean);
+            }
+
+            return trimmed.split(/[\n,]+/)
+                .map(word => word.trim())
+                .filter(word => word.length > 0)
+                .map(word => ({word, sentence: ''}));
+        }
+
+        function copyEntries(entries) {
+            return entries.map(entry => ({word: entry.word, sentence: entry.sentence || ''}));
+        }
+
+        function entryWord(entry) {
+            if (!entry) return '';
+            return typeof entry === 'string' ? entry : (entry.word || '');
+        }
+
+        function entrySentence(entry) {
+            if (!entry || typeof entry === 'string') return '';
+            return entry.sentence || '';
+        }
+
+        function escapeRegExp(value) {
+            return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function renderSentence(container, word, sentence, mode) {
+            container.replaceChildren();
+            if (!sentence) return;
+
+            const pattern = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'gi');
+            let last = 0;
+            let found = false;
+            for (const match of sentence.matchAll(pattern)) {
+                found = true;
+                const index = match.index || 0;
+                if (index > last) {
+                    container.appendChild(document.createTextNode(sentence.slice(last, index)));
+                }
+                if (mode === 'blank') {
+                    const blank = document.createElement('span');
+                    blank.className = 'context-blank';
+                    blank.textContent = '_____';
+                    blank.setAttribute('aria-label', 'blank');
+                    container.appendChild(blank);
+                } else {
+                    const strong = document.createElement('strong');
+                    strong.className = 'context-word';
+                    strong.textContent = match[0];
+                    container.appendChild(strong);
+                }
+                last = index + match[0].length;
+            }
+
+            if (!found) {
+                container.textContent = sentence;
+                return;
+            }
+            if (last < sentence.length) {
+                container.appendChild(document.createTextNode(sentence.slice(last)));
+            }
+        }
+
+        function phraseFor(entry, spellLetters) {
+            const word = entryWord(entry).trim();
+            const sentence = entrySentence(entry).trim();
+            const parts = [];
+            if (word) parts.push(word);
+            if (spellLetters && word) {
+                parts.push(word.toUpperCase().split('').join('. '));
+            }
+            if (sentence) parts.push(sentence);
+            return parts.join('. ');
+        }
+
+        function clearScheduledSpeech() {
+            if (speakTimer !== null) {
+                clearTimeout(speakTimer);
+                speakTimer = null;
+            }
+        }
+
+        function clearSpeechWatch() {
+            if (speechWatch !== null) {
+                clearInterval(speechWatch);
+                speechWatch = null;
+            }
+        }
+
+        function stopSpeaking() {
+            speechRequestId++;
+            clearScheduledSpeech();
+            clearSpeechWatch();
+            activeUtterance = null;
+            if (!synth) return;
+            if (synth.speaking || synth.pending) {
+                try {
+                    synth.cancel();
+                } catch (_) { }
+            }
+        }
+
         function unlockSpeech() {
             if (!synth || speechUnlockStarted) return;
             speechUnlockStarted = true;
 
             try {
-                synth.cancel();
-                const primer = new SpeechSynthesisUtterance('');
-                primer.volume = 0;
-                primer.rate = 1;
-                primer.pitch = 1;
-                synth.speak(primer);
+                // Chrome can leave the engine paused. An empty primer utterance
+                // plays a click on mobile, so the first real phrase is the unlock.
+                if (synth.paused) synth.resume();
+                if (!speechVoicesReady && synth.getVoices().length) populateVoices();
             } catch (err) {
                 console.warn('Speech unlock failed:', err);
             }
@@ -995,6 +1275,33 @@
             return voices.find(v => v.name === desiredName) || selectedVoice || chooseBestVoice();
         }
 
+        function holdUtterance(utterance) {
+            activeUtterance = utterance;
+            const release = () => {
+                if (activeUtterance === utterance) activeUtterance = null;
+            };
+            utterance.addEventListener('end', release);
+            utterance.addEventListener('error', release);
+        }
+
+        function armSpeechWatch(requestId) {
+            clearSpeechWatch();
+            const started = Date.now();
+            speechWatch = window.setInterval(() => {
+                if (requestId !== speechRequestId || !synth || (!synth.speaking && !synth.pending)) {
+                    clearSpeechWatch();
+                    return;
+                }
+                // Only resume a stalled engine. pause()+resume() clicks and crackles.
+                if (synth.paused) {
+                    try {
+                        synth.resume();
+                    } catch (_) { }
+                }
+                if (Date.now() - started > 20000) clearSpeechWatch();
+            }, 1000);
+        }
+
         function speakPhrase(phrase, slowDown = false) {
             if (!phrase) return;
             if (!synth) {
@@ -1003,62 +1310,118 @@
             }
 
             const requestId = ++speechRequestId;
+            clearScheduledSpeech();
             const text = String(phrase).trim();
             if (!text) return;
 
-            try {
-                synth.cancel();
-            } catch (_) { }
+            if (!speechVoicesReady && synth.getVoices().length) populateVoices();
 
-            const voice = resolveSelectedVoice();
-            selectedVoice = voice;
-
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = voice?.lang || 'en-US';
-            if (voice) utterance.voice = voice;
-            utterance.rate = slowDown ? 0.30 : 0.95;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-
-            utterance.onend = () => {
-                if (requestId !== speechRequestId) return;
-            };
-            utterance.onerror = (event) => {
-                if (requestId !== speechRequestId) return;
-                console.warn('Speech synthesis error:', event.error || event);
-            };
-
-            window.setTimeout(() => {
-                if (requestId !== speechRequestId) return;
+            const busy = Boolean(synth.speaking || synth.pending);
+            if (busy) {
                 try {
+                    // cancel() does not clear the paused flag. Speaking over a
+                    // paused engine, or in the same turn as cancel(), overlaps
+                    // the old audio buffer and crackles on mobile.
+                    synth.cancel();
+                    if (synth.paused) synth.resume();
+                } catch (_) { }
+            }
+
+            const startedAt = Date.now();
+            const start = () => {
+                if (requestId !== speechRequestId) return;
+                const stillBusy = Boolean(synth.speaking || synth.pending);
+                if (stillBusy && Date.now() - startedAt < 400) {
+                    speakTimer = window.setTimeout(start, 40);
+                    return;
+                }
+
+                try {
+                    if (synth.paused) synth.resume();
+                    const voice = resolveSelectedVoice();
+                    selectedVoice = voice;
+
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = voice?.lang || 'en-US';
+                    if (voice) {
+                        utterance.voice = voice;
+                        if (voice.voiceURI) utterance.voiceURI = voice.voiceURI;
+                    }
+                    // Rates under about 0.5 make phone voices time-stretch and crackle.
+                    utterance.rate = slowDown ? 0.75 : 1;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+                    utterance.onerror = (event) => {
+                        if (requestId !== speechRequestId) return;
+                        const reason = event.error || '';
+                        if (reason === 'interrupted' || reason === 'canceled' || reason === 'cancelled') return;
+                        console.warn('Speech synthesis error:', reason || event);
+                    };
+                    holdUtterance(utterance);
                     synth.speak(utterance);
+                    armSpeechWatch(requestId);
                 } catch (err) {
                     console.warn('Speech synthesis failed:', err);
                 }
-            }, 30);
+            };
+
+            if (busy) {
+                speakTimer = window.setTimeout(start, 80);
+            } else {
+                start();
+            }
+        }
+
+        function speakEntry(entry, slowDown = false, spellLetters = false) {
+            const phrase = phraseFor(entry, spellLetters);
+            if (phrase) speakPhrase(phrase, slowDown);
         }
 
         startBtn.addEventListener('click', () => {
             unlockSpeech();
-            initAudio();
             isReviewMode = false;
             startGame();
         });
 
         replaySameBtn.addEventListener('click', () => {
             unlockSpeech();
-            initAudio();
             isReviewMode = false;
-            startGame(rawActiveList);
+            startGame(copyEntries(rawActiveList), {skipLearn: true});
         });
 
         repeatBtn.addEventListener('click', () => {
             unlockSpeech();
-            speakPhrase(words[currentIndex], false);
+            speakEntry(words[currentIndex], false, false);
         });
         slowBtn.addEventListener('click', () => {
             unlockSpeech();
-            speakPhrase(words[currentIndex], true);
+            speakEntry(words[currentIndex], true, false);
+        });
+        learnHearBtn.addEventListener('click', () => {
+            unlockSpeech();
+            speakEntry(learnEntries[learnIndex], false, true);
+        });
+        learnSlowBtn.addEventListener('click', () => {
+            unlockSpeech();
+            speakEntry(learnEntries[learnIndex], true, true);
+        });
+        learnNextBtn.addEventListener('click', () => {
+            unlockSpeech();
+            if (learnIndex >= learnEntries.length - 1) {
+                beginQuiz(learnEntries);
+                return;
+            }
+            learnIndex++;
+            showLearnCard();
+        });
+        learnSkipBtn.addEventListener('click', () => {
+            unlockSpeech();
+            beginQuiz(learnEntries);
+        });
+        learnBackBtn.addEventListener('click', () => {
+            stopSpeaking();
+            learnScreen.classList.add('hidden');
+            setupScreen.classList.remove('hidden');
         });
         restartBtn.addEventListener('click', resetGame);
         reviewBtn.addEventListener('click', startReviewMode);
@@ -1077,13 +1440,15 @@
             const keyValue = keyBtn.getAttribute('data-key');
 
             if (keyValue === 'BACK') {
+                prepareRetryEntry();
                 if (hiddenInput.value.length > 0) {
                     hiddenInput.value = hiddenInput.value.slice(0, -1);
                     playSound('type');
                     updateTilesDisplay();
                 }
             } else {
-                const targetWord = words[currentIndex] || '';
+                prepareRetryEntry();
+                const targetWord = entryWord(words[currentIndex]);
                 if (currentAttempts < maxAttempts && hiddenInput.value.length >= targetWord.length) {
                     return;
                 }
@@ -1105,32 +1470,56 @@
             }
         }, {passive: true});
 
-        function startGame(customList = null) {
-            const rawText = customList ? customList.join(', ') : wordInput.value.trim();
-            if (!rawText) {
-                alert('Please select a list or enter words first!');
+        function showLearnCard() {
+            const entry = learnEntries[learnIndex];
+            const word = entryWord(entry);
+            const sentence = entrySentence(entry);
+
+            learnProgressEl.textContent = String(learnIndex + 1);
+            learnTotalEl.textContent = String(learnEntries.length);
+            learnKickerEl.textContent = sentence
+                ? 'Listen, look at the spelling, then hear the word in a sentence.'
+                : 'Listen, then look at each letter.';
+
+            learnTiles.replaceChildren();
+            for (const char of word) {
+                const tile = document.createElement('div');
+                tile.className = 'tile correct';
+                tile.textContent = char.toUpperCase();
+                learnTiles.appendChild(tile);
+            }
+
+            if (sentence) {
+                renderSentence(learnSentenceEl, word, sentence, 'highlight');
+            } else {
+                learnSentenceEl.textContent = 'Remember these letters. You will spell the word next.';
+            }
+
+            const lastCard = learnIndex >= learnEntries.length - 1;
+            learnNextBtn.textContent = lastCard ? 'Start Spelling!' : 'Next Word';
+            speakEntry(entry, false, true);
+        }
+
+        function updateContextLine(entry, reveal) {
+            const word = entryWord(entry);
+            const sentence = entrySentence(entry);
+            if (!sentence) {
+                contextLine.classList.add('hidden');
+                contextText.replaceChildren();
                 return;
             }
 
-            if (!isReviewMode) {
-                rawActiveList = rawText.split(/[\n,]+/)
-                    .map(word => word.trim())
-                    .filter(word => word.length > 0);
-            }
+            contextLine.classList.remove('hidden');
+            contextLabel.textContent = reveal ? 'Here it is in a sentence' : 'Use it in a sentence';
+            renderSentence(contextText, word, sentence, reveal ? 'highlight' : 'blank');
+        }
 
-            const listToUse = customList ? customList : rawActiveList;
-            words = shuffleArray([...listToUse]);
-
-            if (!customList) missedWords = [];
-            playerName = playerNameInput.value.trim() || 'Speller 1';
-
-            selectedVoice = resolveSelectedVoice();
-
+        function beginQuiz(entries) {
+            words = shuffleArray(copyEntries(entries));
             currentIndex = 0;
             score = 0;
             streak = 0;
-            streakBox.textContent = `🔥 0`;
-
+            streakBox.textContent = '🔥 0';
             totalWordsEl.textContent = words.length;
             scoreEl.textContent = score;
 
@@ -1143,19 +1532,79 @@
             }, 1000);
 
             setupScreen.classList.add('hidden');
+            learnScreen.classList.add('hidden');
             endScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
-
+            feedback.textContent = '';
             playNextWord();
         }
 
-        hiddenInput.addEventListener('input', (e) => {
+        function startGame(customList = null, options = {}) {
+            const skipLearn = Boolean(options.skipLearn) || isReviewMode;
+            const entries = customList ? normalizeList(customList) : parseEditorText(wordInput.value);
+            if (!entries.length) {
+                alert('Please select a list or enter words first!');
+                return;
+            }
+
+            if (!customList) {
+                rawActiveList = copyEntries(entries);
+            }
+            if (!isReviewMode) missedWords = [];
+
+            playerName = playerNameInput.value.trim() || 'Speller 1';
+            selectedVoice = resolveSelectedVoice();
+
+            if (!skipLearn) {
+                learnEntries = copyEntries(entries);
+                learnIndex = 0;
+                clearInterval(timerInterval);
+                setupScreen.classList.add('hidden');
+                endScreen.classList.add('hidden');
+                gameScreen.classList.add('hidden');
+                learnScreen.classList.remove('hidden');
+                showLearnCard();
+                return;
+            }
+
+            beginQuiz(entries);
+        }
+
+        hiddenInput.addEventListener('input', () => {
+            prepareRetryEntry();
             playSound('type');
             updateTilesDisplay();
         });
 
+        function prepareRetryEntry() {
+            if (currentAttempts >= maxAttempts) return;
+            if (document.getElementById('tile-0')) return;
+            const typed = hiddenInput.value;
+            createFixedGrid(entryWord(words[currentIndex]).length);
+            hiddenInput.value = typed;
+        }
+
+        function scheduleRetry(correctSpelling, entry) {
+            const serial = ++retrySerial;
+            // Drop the failed spelling right away so the next tap starts fresh.
+            // The colored tiles stay up until the hint grid replaces them.
+            hiddenInput.value = '';
+            setTimeout(() => {
+                if (serial !== retrySerial) return;
+                if (!document.getElementById('tile-0')) {
+                    createFixedGrid(correctSpelling.length);
+                    hiddenInput.value = '';
+                    updateTilesDisplay();
+                    if (!window.matchMedia("(pointer: coarse)").matches) {
+                        hiddenInput.focus();
+                    }
+                }
+                speakEntry(entry, true, false);
+            }, 1200);
+        }
+
         function updateTilesDisplay() {
-            const targetWord = words[currentIndex] || '';
+            const targetWord = entryWord(words[currentIndex]);
             const typedVal = hiddenInput.value;
 
             if (currentAttempts === maxAttempts) {
@@ -1204,6 +1653,7 @@
         }
 
         function playNextWord() {
+            retrySerial++;
             if (currentIndex >= words.length) {
                 endGame();
                 return;
@@ -1211,7 +1661,9 @@
 
             currentAttempts = maxAttempts;
             attemptsLeftEl.textContent = currentAttempts;
-            ghostMask = new Array(words[currentIndex].length).fill(null);
+            const entry = words[currentIndex];
+            ghostMask = new Array(entryWord(entry).length).fill(null);
+            updateContextLine(entry, false);
 
             hiddenInput.removeAttribute('maxlength');
             hiddenInput.value = '';
@@ -1221,13 +1673,14 @@
                 hiddenInput.focus();
             }
 
-            speakPhrase(words[currentIndex], false);
+            speakEntry(entry, false, false);
         }
 
         function handleAnswerSubmit(e) {
             e.preventDefault();
             const userSpelling = hiddenInput.value.trim().toLowerCase();
-            const correctSpelling = words[currentIndex].toLowerCase();
+            const entry = words[currentIndex];
+            const correctSpelling = entryWord(entry).toLowerCase();
 
             if (!userSpelling) return;
 
@@ -1254,6 +1707,7 @@
             }
 
             if (allCorrect) {
+                retrySerial++;
                 score++;
                 streak++;
                 scoreEl.textContent = score;
@@ -1261,6 +1715,7 @@
 
                 playSound('correct');
                 triggerConfetti(40);
+                updateContextLine(entry, true);
                 showFeedback('Correct! ✨', 'correct');
 
                 currentIndex++;
@@ -1273,8 +1728,8 @@
                 tilesContainer.classList.add('shake');
                 setTimeout(() => tilesContainer.classList.remove('shake'), 400);
 
-                if (!missedWords.includes(words[currentIndex])) {
-                    missedWords.push(words[currentIndex]);
+                if (!missedWords.some(item => entryWord(item).toLowerCase() === correctSpelling)) {
+                    missedWords.push({word: entryWord(entry), sentence: entrySentence(entry)});
                 }
 
                 streak = 0;
@@ -1285,17 +1740,7 @@
 
                 if (currentAttempts > 0) {
                     showFeedback(`Try again! (${currentAttempts} attempt${currentAttempts > 1 ? 's' : ''} remaining)`, 'incorrect');
-
-                    setTimeout(() => {
-                        createFixedGrid(correctSpelling.length);
-                        hiddenInput.value = '';
-                        updateTilesDisplay();
-                        if (!window.matchMedia("(pointer: coarse)").matches) {
-                            hiddenInput.focus();
-                        }
-
-                        speakPhrase(words[currentIndex], true);
-                    }, 1200);
+                    scheduleRetry(correctSpelling, entry);
 
                 } else {
                     createFixedGrid(correctSpelling.length);
@@ -1304,8 +1749,9 @@
                         tile.textContent = correctSpelling[i].toUpperCase();
                         tile.className = 'tile correct';
                     }
+                    updateContextLine(entry, true);
 
-                    showFeedback(`Out of attempts! The correct spelling was "${words[currentIndex]}".`, 'incorrect');
+                    showFeedback(`Out of attempts! The correct spelling was "${entryWord(entry)}".`, 'incorrect');
                     currentIndex++;
 
                     setTimeout(() => {
@@ -1322,7 +1768,10 @@
         }
 
         function endGame() {
+            retrySerial++;
             clearInterval(timerInterval);
+            stopSpeaking();
+            learnScreen.classList.add('hidden');
             gameScreen.classList.add('hidden');
             endScreen.classList.remove('hidden');
 
@@ -1362,14 +1811,19 @@
         }
 
         function startReviewMode() {
-            const listToReview = [...missedWords];
+            const listToReview = copyEntries(missedWords);
             missedWords = [];
             isReviewMode = true;
-            startGame(listToReview);
+            startGame(listToReview, {skipLearn: true});
         }
 
         function resetGame() {
+            retrySerial++;
+            stopSpeaking();
+            clearInterval(timerInterval);
             endScreen.classList.add('hidden');
+            learnScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
             setupScreen.classList.remove('hidden');
             fileLoader.value = '';
             isReviewMode = false;
