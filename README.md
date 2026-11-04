@@ -6,53 +6,20 @@ A kid-friendly web-based **Spelling Bee** game designed for children and parents
 
 ## Features
 
-- **Voice-Powered Audio:** Uses the native **Web Speech API** to read words aloud at normal and slow speeds. Speech waits until the previous phrase has finished cancelling, avoids empty primer sounds, and keeps the slow speed in a range phone voices can play without crackling.
-- **Learn, Then Spell:** Each new game shows the spelling first. The reader says the word, spells the letters, and reads a sentence when the list has one.
+- **Three Game Modes:** 🐝 *Spelling Bee* (hear it, spell it), 🔀 *Scramble* (tap the jumbled letters in order) and 🧩 *Missing Letters* (fill in the gaps; the game hides vowels and vowel teams like `aw`, `ou`, `ow`, where the tricky spellings live).
+- **Buzz the Bee:** A mascot with a speech bubble who cheers, wobbles and encourages the speller after every answer.
+- **Honey Points & Bee Ranks:** First try = 10 honey, second = 6, third = 3, plus streak bonuses. Honey grows the player's rank from 🥚 Bee Egg up to 🌟 Spelling Legend.
+- **Word Mastery Stars:** Each word earns a ⭐ when spelled right on the first try (3 stars = mastered) and loses one when missed. The setup screen shows "X / 12 mastered" for the week, and **🎯 Practice tricky words** quizzes only the words that aren't mastered yet.
+- **Sticker Book:** 13 unlockable stickers (Hot Streak, Perfect Hive, Speedy Bee, Comeback Kid, Word Wizard, Full Week...).
+- **School-Day Streak:** Counts days practiced in a row. Weekends never break the streak.
+- **Progress Track & Hearts:** A bee flies toward the honey pot as words are completed; tries are shown as ❤️❤️❤️.
+- **Voice-Powered Audio:** Uses the native **Web Speech API** to read words aloud at normal and slow speeds. A missed word is said and spelled out before moving on.
+- **Crackle-Free Speech on Phones:** Sound effects (Web Audio) only run while a beep is actually playing and are put to sleep before the reader talks. A running AudioContext alongside speech was what made the voice crackle on mobile. Sound effects can also be turned off in Settings.
+- **Learn, Then Spell:** Each new game can show the spelling first (toggle "Show me the words first"). The reader says the word, spells the letters, and reads a sentence when the list has one.
 - **Same Sound, Different Spelling:** A word can include a sentence. In the quiz the reader says the word and the sentence, and the on-screen sentence hides the spelling so `wait` and `weight` stay distinct.
-- **Retro Sound & Celebrations:** Powered by the **Web Audio API** for instant sound effects and a custom HTML5 Canvas confetti animation for big wins.
-- **Integrated Keyboard Focus Trap:** Auto-focuses keyboard input anywhere on the screen so children never lose their place while typing.
-- **Practice Missed Words:** Players can re-try only the words they misspelled in a special round, then easily return to the full list.
-- **JSON List Management & Server Auto-Fetch:**
-  - Automatically loads weekly word lists from a server-side `manifest.json`.
-  - Supports loading local custom `.json` word lists.
-  - Allows parents and kids to create and export new custom word lists directly to `.json`.
-- **High Score Tracking:** Saves high scores and top times per player name using browser `localStorage`.
-- **Built-in How to Play Modal:** Clear, accessible instructions for kids and non-technical users.
+- **Practice Missed Words:** Re-try only the words that were missed, then return to the full list.
+- **JSON List Management & Server Auto-Fetch:** Weekly lists load from `word-lists/manifest.json`; custom `.json` lists can be loaded or exported.
+- **Per-Player Progress:** High scores, honey, stars and stickers are saved per player name in browser `localStorage` (per device/browser).
 
 ---
 
-## Getting Started
-
-### Quick Start (Local)
-1. Download or clone this repository.
-2. Open `index.html` directly in any modern web browser (Chrome, Edge, Safari, Firefox).
-
-### Hosting on GitHub Pages
-1. Push all files to a public GitHub repository.
-2. Go to **Settings** > **Pages**.
-3. Under **Branch**, select `main` (or `master`) and click **Save**.
-4. Your game will be live at `https://<your-username>.github.io/<repository-name>/`.
-
----
-
-## File Structure
-
-```text
-├── index.html              # Main game application & styles
-├── logo.svg                # Header logo graphics
-├── README.md               # Project documentation
-└── word-lists/             # Directory for pre-loaded word lists
-    ├── manifest.json       # Index file listing available weekly lists
-    ├── week-1.json         # Weekly word list (array of words)
-    ├── week-2.json
-    ├── week-3.json
-    └── week-5.json         # Homophones, each with a context sentence
-
-Word lists are a JSON array. Items can be a word string, or an object with `word` and `sentence` when the spelling depends on context:
-
-```json
-[
-  "blade",
-  {"word": "wait", "sentence": "Please wait for your turn."}
-]
-```

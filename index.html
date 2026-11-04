@@ -11,17 +11,24 @@
             --primary-border: #e67e22;
             --tile-blue: #4a90e2;
             --tile-green: #2ecc71;
-            --success-color: #2ecc71;
+            --success-color: #27ae60;
             --error-color: #e74c3c;
             --bg-color: #fef9e7;
             --card-bg: #ffffff;
             --tile-border: #dcdde1;
             --text-color: #2c3e50;
+            --muted: #5d6d7e;
+            --honey: #f39c12;
+            --soft: #f8fafc;
+            --line: #e2e8f0;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 10% 10%, rgba(241, 196, 15, 0.12) 0 60px, transparent 61px),
+                radial-gradient(circle at 90% 80%, rgba(230, 126, 34, 0.08) 0 90px, transparent 91px);
             color: var(--text-color);
             display: flex;
             justify-content: center;
@@ -85,7 +92,7 @@
         input[type="file"] {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--line);
             border-radius: 10px;
             box-sizing: border-box;
             font-size: 16px;
@@ -119,6 +126,7 @@
             margin: 4px;
             font-weight: bold;
             -webkit-tap-highlight-color: transparent;
+            font-family: inherit;
         }
 
         button:hover {
@@ -160,25 +168,46 @@
             color: white;
         }
 
+        .btn-big {
+            font-size: 1.15rem;
+            padding: 14px 28px;
+        }
+
         .hidden {
             display: none !important;
         }
 
+        /* ---------- Status bar & progress ---------- */
         .status-bar {
             display: flex;
-            justify-content: space-around;
-            font-size: 1.05rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 1rem;
             font-weight: bold;
-            margin-bottom: 1.2rem;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 10px;
-            border-radius: 10px;
+            margin-bottom: 0.7rem;
+        }
+
+        .pill {
+            background: var(--soft);
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 6px 12px;
+            white-space: nowrap;
+        }
+
+        .pill.honey-pill {
+            background: #fff7e0;
+            border-color: #f8d77a;
         }
 
         .streak-badge {
             color: var(--primary-border);
-            animation: pulse 1s infinite alternate;
+            display: inline-block;
+        }
+
+        .streak-badge.hot {
+            animation: pulse 0.8s infinite alternate;
         }
 
         @keyframes pulse {
@@ -187,15 +216,238 @@
             }
 
             100% {
-                transform: scale(1.1);
+                transform: scale(1.12);
             }
         }
 
+        .hearts {
+            letter-spacing: 1px;
+        }
+
+        .heart-lost {
+            filter: grayscale(1);
+            opacity: 0.35;
+        }
+
+        .bee-track {
+            position: relative;
+            height: 26px;
+            margin: 0 8px 0.6rem 8px;
+        }
+
+        .bee-track-line {
+            position: absolute;
+            left: 0;
+            right: 26px;
+            top: 11px;
+            height: 6px;
+            border-radius: 6px;
+            background: repeating-linear-gradient(90deg, #f6e3a6 0 10px, transparent 10px 16px);
+        }
+
+        .bee-track-fill {
+            position: absolute;
+            left: 0;
+            top: 11px;
+            height: 6px;
+            width: 0;
+            border-radius: 6px;
+            background: var(--primary-color);
+            transition: width 0.6s ease;
+        }
+
+        .bee-runner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 1.3rem;
+            line-height: 1;
+            transform: translateX(-50%) scaleX(-1);
+            transition: left 0.6s ease;
+        }
+
+        .hive-goal {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 1.3rem;
+            line-height: 1;
+        }
+
+        /* ---------- Buzz the mascot ---------- */
+        .buzz-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0.2rem 0 0.7rem;
+            text-align: left;
+        }
+
+        .buzz {
+            width: 64px;
+            height: 64px;
+            flex: 0 0 64px;
+        }
+
+        .buzz.large {
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 0.3rem;
+        }
+
+        .buzz svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            animation: bob 2.4s ease-in-out infinite;
+        }
+
+        .buzz .wings {
+            transform-box: fill-box;
+            transform-origin: 50% 100%;
+            animation: flap 0.18s ease-in-out infinite alternate;
+        }
+
+        .buzz .m {
+            display: none;
+        }
+
+        .buzz.mood-idle .m-smile,
+        .buzz.mood-happy .m-big,
+        .buzz.mood-cheer .m-big,
+        .buzz.mood-sad .m-frown,
+        .buzz.mood-think .m-oh {
+            display: inline;
+        }
+
+        .buzz.mood-happy svg {
+            animation: hop 0.6s ease-out 2;
+        }
+
+        .buzz.mood-cheer svg {
+            animation: cheer 0.9s ease-in-out 2;
+        }
+
+        .buzz.mood-sad svg {
+            animation: wobble 0.6s ease-in-out 1;
+        }
+
+        @keyframes bob {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
+        }
+
+        @keyframes flap {
+            from {
+                transform: scaleY(1);
+            }
+
+            to {
+                transform: scaleY(0.7);
+            }
+        }
+
+        @keyframes hop {
+            0% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-14px) rotate(-6deg);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cheer {
+            0% {
+                transform: rotate(0) scale(1);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.15);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        @keyframes wobble {
+
+            0%,
+            100% {
+                transform: rotate(0);
+            }
+
+            25% {
+                transform: rotate(-10deg);
+            }
+
+            75% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .bubble {
+            position: relative;
+            flex: 1;
+            background: #fffbea;
+            border: 2px solid #f6d365;
+            border-radius: 14px;
+            padding: 9px 12px;
+            font-weight: 700;
+            font-size: 1.02rem;
+            line-height: 1.35;
+            min-height: 24px;
+        }
+
+        .bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            margin-top: -8px;
+            border-width: 8px 10px 8px 0;
+            border-style: solid;
+            border-color: transparent #f6d365 transparent transparent;
+        }
+
+        .bubble.correct {
+            color: var(--success-color);
+            background: #eafaf1;
+            border-color: #a9dfbf;
+        }
+
+        .bubble.correct::before {
+            border-right-color: #a9dfbf;
+        }
+
+        .bubble.incorrect {
+            color: #c0392b;
+            background: #fdedec;
+            border-color: #f5b7b1;
+        }
+
+        .bubble.incorrect::before {
+            border-right-color: #f5b7b1;
+        }
+
+        /* ---------- Tiles ---------- */
         .tiles-container {
             display: flex;
             justify-content: center;
             gap: 8px;
-            margin: 1.2rem 0;
+            margin: 1rem 0;
             flex-wrap: wrap;
             cursor: pointer;
             min-height: 58px;
@@ -219,6 +471,20 @@
             transition: background-color 0.2s, transform 0.1s;
         }
 
+        .tile.pop {
+            animation: tilepop 0.18s ease-out;
+        }
+
+        @keyframes tilepop {
+            0% {
+                transform: scale(0.7);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
         .tile.active {
             box-shadow: 0 0 0 3px var(--primary-color), 0 4px 6px rgba(0, 0, 0, 0.1);
             transform: translateY(-2px);
@@ -238,6 +504,24 @@
             background-color: #e2e8f0;
             color: #64748b;
             box-shadow: none;
+        }
+
+        .tile.given {
+            background-color: #fff3c4;
+            color: #8a6d0b;
+            box-shadow: inset 0 0 0 2px #f6d365;
+        }
+
+        .tile.blank {
+            background-color: #ffffff;
+            box-shadow: inset 0 0 0 3px #b9d3f3;
+            color: var(--tile-blue);
+        }
+
+        .tile.blank.filled {
+            background-color: var(--tile-blue);
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .virtual-keyboard {
@@ -262,6 +546,7 @@
             font-size: 1.1rem;
             font-weight: 800;
             padding: 12px 0;
+            margin: 0;
             flex: 1;
             max-width: 42px;
             height: 48px;
@@ -283,6 +568,47 @@
             max-width: 65px;
             font-size: 0.9rem;
             background-color: #cbd5e1;
+        }
+
+        /* Scramble letter bank */
+        .letter-bank {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin: 1rem 0;
+            user-select: none;
+        }
+
+        .bank-key {
+            width: 48px;
+            height: 54px;
+            margin: 0;
+            padding: 0;
+            border-radius: 12px;
+            background: #ffe58a;
+            border: 2px solid #f1c40f;
+            box-shadow: 0 4px 0 #e0b100;
+            font-size: 1.6rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #6b4f00;
+            transition: opacity 0.15s, transform 0.1s;
+        }
+
+        .bank-key.used {
+            opacity: 0.25;
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        .bank-key.back {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 0 #b6c2d1;
+            color: #2c3e50;
+            width: 64px;
+            font-size: 1.2rem;
         }
 
         .shake {
@@ -315,13 +641,6 @@
             pointer-events: none;
         }
 
-        .feedback {
-            margin-top: 0.8rem;
-            font-size: 1.1rem;
-            font-weight: bold;
-            min-height: 28px;
-        }
-
         .correct {
             color: var(--success-color);
         }
@@ -333,7 +652,7 @@
         .field-hint {
             text-align: left;
             font-size: 0.85rem;
-            color: #5d6d7e;
+            color: var(--muted);
             margin: -0.6rem 0 1rem;
             line-height: 1.4;
         }
@@ -347,17 +666,18 @@
             font-size: 1.4rem;
         }
 
-        .learn-kicker {
-            margin: 0 0 0.8rem;
-            color: #5d6d7e;
-            line-height: 1.4;
-        }
-
         .learn-sentence {
             font-size: 1.15rem;
             line-height: 1.5;
             margin: 0.2rem 0 1rem;
             min-height: 3.2rem;
+        }
+
+        .learn-stars {
+            font-size: 1.1rem;
+            margin-top: -0.3rem;
+            color: var(--muted);
+            font-weight: 700;
         }
 
         .context-word {
@@ -379,7 +699,7 @@
             font-size: 0.75rem;
             letter-spacing: 0.04em;
             text-transform: uppercase;
-            color: #5d6d7e;
+            color: var(--muted);
             font-weight: 800;
             margin-bottom: 4px;
         }
@@ -423,6 +743,216 @@
             font-weight: bold;
         }
 
+        /* ---------- Setup screen cards ---------- */
+        .player-card {
+            background: linear-gradient(135deg, #fff8dc, #fff1c1);
+            border: 2px solid #f6d365;
+            border-radius: 16px;
+            padding: 12px 14px;
+            margin: -0.4rem 0 1.2rem;
+            text-align: left;
+        }
+
+        .rank-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .rank-emoji {
+            font-size: 2.2rem;
+            line-height: 1;
+        }
+
+        .rank-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .rank-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .meter {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0 3px;
+            border: 1px solid #f0d27a;
+        }
+
+        .meter>div {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #f1c40f, #e67e22);
+            border-radius: 10px;
+            transition: width 0.6s ease;
+        }
+
+        .meter.green>div {
+            background: linear-gradient(90deg, #58d68d, #27ae60);
+        }
+
+        .rank-next {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .player-stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 14px;
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .chip-btn {
+            margin: 0 0 0 auto;
+            padding: 7px 12px;
+            font-size: 0.9rem;
+            border-radius: 999px;
+            background: #fff;
+            border: 2px solid var(--primary-border);
+            color: var(--primary-border);
+        }
+
+        .progress-card {
+            background: var(--soft);
+            border: 2px solid var(--line);
+            border-radius: 16px;
+            padding: 12px 14px;
+            margin: -0.4rem 0 1.2rem;
+            text-align: left;
+        }
+
+        .progress-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 8px;
+            font-weight: 700;
+        }
+
+        .progress-head span {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .word-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin: 10px 0 4px;
+        }
+
+        .word-chip {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .word-chip small {
+            margin-left: 4px;
+            letter-spacing: -1px;
+        }
+
+        .word-chip.mastered {
+            background: #fff6d1;
+            border-color: #f1c40f;
+        }
+
+        .progress-card .btn-review {
+            width: 100%;
+            margin: 8px 0 0;
+        }
+
+        .section-label {
+            margin-top: 0.2rem;
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 0.8rem;
+        }
+
+        .mode-card {
+            margin: 0;
+            padding: 12px 6px;
+            background: #fff;
+            border: 3px solid var(--line);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            color: var(--text-color);
+        }
+
+        .mode-card .mode-emoji {
+            font-size: 1.8rem;
+            line-height: 1.1;
+        }
+
+        .mode-card b {
+            font-size: 0.95rem;
+        }
+
+        .mode-card small {
+            font-weight: 600;
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .mode-card.selected {
+            border-color: var(--primary-border);
+            background: #fff8e1;
+            box-shadow: 0 4px 0 #f5cba7;
+        }
+
+        .check-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+
+        .check-row input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-border);
+        }
+
+        details.word-editor {
+            text-align: left;
+            margin-bottom: 1rem;
+            border: 2px dashed var(--line);
+            border-radius: 12px;
+            padding: 8px 12px;
+        }
+
+        details.word-editor summary {
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--muted);
+            padding: 4px 0;
+        }
+
+        details.word-editor[open] summary {
+            margin-bottom: 8px;
+        }
+
+        /* ---------- Modals, toast, floats ---------- */
         .modal {
             position: fixed;
             top: 0;
@@ -442,13 +972,224 @@
             border-radius: 12px;
             max-width: 450px;
             width: 90%;
+            max-height: 88vh;
+            overflow-y: auto;
             text-align: left;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
         }
 
         .modal-content h2 {
             margin-top: 0;
             text-align: center;
+        }
+
+        .sticker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+            gap: 10px;
+        }
+
+        .sticker {
+            border: 2px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 6px;
+            text-align: center;
+            background: var(--soft);
+        }
+
+        .sticker .s-emoji {
+            font-size: 2.1rem;
+            display: block;
+            line-height: 1.2;
+        }
+
+        .sticker b {
+            display: block;
+            font-size: 0.88rem;
+            margin: 2px 0;
+        }
+
+        .sticker small {
+            display: block;
+            font-size: 0.74rem;
+            color: var(--muted);
+            line-height: 1.3;
+        }
+
+        .sticker.earned {
+            background: #fff8e1;
+            border-color: #f6d365;
+        }
+
+        .sticker.locked .s-emoji {
+            filter: grayscale(1);
+            opacity: 0.3;
+        }
+
+        .toast {
+            position: fixed;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c3e50;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 700;
+            z-index: 300;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            animation: toastIn 0.35s ease-out;
+            max-width: 90vw;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translate(-50%, -30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .honey-float {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--honey);
+            pointer-events: none;
+            animation: floatUp 1.2s ease-out forwards;
+            z-index: 5;
+            white-space: nowrap;
+            text-shadow: 0 1px 0 #fff;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, 10px) scale(0.8);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translate(-50%, 0) scale(1.1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50px) scale(1);
+            }
+        }
+
+        #game-screen {
+            position: relative;
+        }
+
+        /* ---------- End screen ---------- */
+        .big-stars {
+            font-size: 2.4rem;
+            letter-spacing: 4px;
+            margin: 0.2rem 0;
+        }
+
+        .big-stars .dim {
+            filter: grayscale(1);
+            opacity: 0.25;
+        }
+
+        .end-stats {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0.4rem 0 1rem;
+        }
+
+        .new-stickers {
+            background: #fff8e1;
+            border: 2px solid #f6d365;
+            border-radius: 14px;
+            padding: 10px;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .new-stickers .row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 6px;
+        }
+
+        .new-stickers .mini {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .new-stickers .mini span {
+            font-size: 1.9rem;
+        }
+
+        .results-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .results-list li {
+            border-radius: 999px;
+            padding: 5px 11px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: 1px solid var(--line);
+            background: #fff;
+        }
+
+        .results-list li.first {
+            background: #eafaf1;
+            border-color: #a9dfbf;
+        }
+
+        .results-list li.retry {
+            background: #fef5e7;
+            border-color: #f8c471;
+        }
+
+        .results-list li.missed {
+            background: #fdedec;
+            border-color: #f5b7b1;
+        }
+
+        .end-mastery {
+            text-align: left;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 0.4rem;
+        }
+
+        .switch-row label {
+            margin: 0;
         }
 
         #confetti-canvas {
@@ -491,6 +1232,49 @@
                 max-width: 52px;
                 font-size: 0.8rem;
             }
+
+            .status-bar {
+                gap: 4px;
+            }
+
+            .pill {
+                padding: 4px 7px;
+                font-size: 0.85rem;
+            }
+
+            .hearts {
+                letter-spacing: 0;
+            }
+
+            .buzz {
+                width: 54px;
+                height: 54px;
+                flex-basis: 54px;
+            }
+
+            .bubble {
+                font-size: 0.95rem;
+            }
+
+            .mode-card small {
+                font-size: 0.72rem;
+            }
+
+            .bank-key {
+                width: 44px;
+                height: 50px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
@@ -498,11 +1282,12 @@
 <body>
 
     <canvas id="confetti-canvas"></canvas>
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
     <div class="container" id="game-container">
         <div class="top-nav">
             <button id="help-btn" class="nav-btn">❓ How to Play</button>
-            <button id="settings-btn" class="nav-btn">⚙️ Advanced Settings</button>
+            <button id="settings-btn" class="nav-btn">⚙️ Settings</button>
         </div>
 
         <img src="logo.svg" alt="Spelling Bee Logo" class="logo-header">
@@ -512,32 +1297,82 @@
             <label for="player-name-input">Player Name:</label>
             <input type="text" id="player-name-input" value="Speller 1" placeholder="Enter your name...">
 
+            <div class="player-card" id="player-card">
+                <div class="rank-row">
+                    <div class="rank-emoji" id="rank-emoji">🥚</div>
+                    <div class="rank-info">
+                        <div class="rank-name" id="rank-name">Bee Egg</div>
+                        <div class="meter">
+                            <div id="rank-fill"></div>
+                        </div>
+                        <div class="rank-next" id="rank-next"></div>
+                    </div>
+                </div>
+                <div class="player-stats">
+                    <span>🍯 <span id="honey-total">0</span> honey</span>
+                    <span>📅 <span id="day-streak">0</span>-day streak</span>
+                    <button id="stickers-btn" type="button" class="chip-btn">📒 Stickers <span
+                            id="sticker-count">0</span></button>
+                </div>
+            </div>
+
             <label for="server-list-select">Choose Weekly Word List:</label>
             <select id="server-list-select">
                 <option value="custom">-- Choose a list or type below --</option>
             </select>
 
-            <label for="word-input">Word List (separated by commas or lines):</label>
-            <textarea id="word-input" placeholder="apple, banana, cherry&#10;wait | Please wait for your turn."></textarea>
-            <p class="field-hint">Words that sound the same need a sentence so the spelling is clear. Put one word on each line, then a <code>|</code>, then the sentence.</p>
+            <div id="progress-card" class="progress-card hidden">
+                <div class="progress-head">
+                    <strong id="progress-title">This week</strong>
+                    <span id="progress-count">0 / 0 mastered</span>
+                </div>
+                <div class="meter green">
+                    <div id="mastery-fill"></div>
+                </div>
+                <div id="word-chips" class="word-chips"></div>
+                <button id="tricky-btn" type="button" class="btn-review">🎯 Practice tricky words</button>
+            </div>
+
+            <label class="section-label">Pick a game:</label>
+            <div class="mode-grid" role="radiogroup" aria-label="Game mode">
+                <button type="button" class="mode-card selected" data-mode="classic" role="radio"
+                    aria-checked="true"><span class="mode-emoji">🐝</span><b>Spelling Bee</b><small>Hear it, spell
+                        it</small></button>
+                <button type="button" class="mode-card" data-mode="scramble" role="radio" aria-checked="false"><span
+                        class="mode-emoji">🔀</span><b>Scramble</b><small>Unjumble the letters</small></button>
+                <button type="button" class="mode-card" data-mode="missing" role="radio" aria-checked="false"><span
+                        class="mode-emoji">🧩</span><b>Missing Letters</b><small>Fill in the gaps</small></button>
+            </div>
+
+            <label class="check-row"><input type="checkbox" id="learn-first" checked> Show me the words first</label>
+
+            <details id="word-editor" class="word-editor">
+                <summary id="word-editor-summary">✏️ See or edit the word list</summary>
+                <label for="word-input">Word List (separated by commas or lines):</label>
+                <textarea id="word-input" placeholder="apple, banana, cherry&#10;wait | Please wait for your turn."></textarea>
+                <p class="field-hint">Words that sound the same need a sentence so the spelling is clear. Put one word
+                    on each line, then a <code>|</code>, then the sentence.</p>
+                <button id="export-btn" type="button" class="btn-save" style="margin: 0;">💾 Save New Word List</button>
+            </details>
 
             <div id="saved-score-display" class="high-score-box hidden"></div>
 
-            <div style="display: flex; justify-content: center; flex-wrap: wrap;">
-                <button id="start-btn" class="btn-main" style="font-size: 1.1rem; padding: 14px 28px;">Start Game
-                    🚀</button>
-                <button id="export-btn" class="btn-save">💾 Save New Word List</button>
-            </div>
+            <button id="start-btn" class="btn-main btn-big">Let's Bee-gin! 🚀</button>
         </div>
 
         <!-- Learn Screen -->
         <div id="learn-screen" class="hidden">
             <h2 class="screen-title">Learn the words</h2>
-            <p id="learn-kicker" class="learn-kicker">Listen, look at the spelling, then hear the word in a sentence.</p>
+            <div class="buzz-row">
+                <div class="buzz mood-idle" id="learn-buzz"></div>
+                <div class="bubble" id="learn-kicker">Listen, look at the spelling, then hear the word in a sentence.
+                </div>
+            </div>
             <div class="status-bar">
-                <div>Word <span id="learn-progress">1</span> of <span id="learn-total">1</span></div>
+                <div class="pill">Word <span id="learn-progress">1</span> of <span id="learn-total">1</span></div>
             </div>
             <div id="learn-tiles" class="tiles-container"></div>
+            <div id="learn-stars" class="learn-stars"></div>
             <p id="learn-sentence" class="learn-sentence"></p>
             <div class="button-row">
                 <button id="learn-hear-btn" type="button" class="btn-secondary">🔊 Hear Word</button>
@@ -553,10 +1388,23 @@
         <!-- Game Screen -->
         <div id="game-screen" class="hidden">
             <div class="status-bar">
-                <div>Score: <span id="score">0</span> / <span id="total-words">0</span></div>
-                <div><span id="streak-box" class="streak-badge">🔥 0</span></div>
-                <div>Attempts: <span id="attempts-left">3</span></div>
-                <div>⏱️ <span id="timer">0s</span></div>
+                <div class="pill">⭐ <span id="score">0</span>/<span id="total-words">0</span></div>
+                <div class="pill"><span id="streak-box" class="streak-badge">🔥 0</span></div>
+                <div class="pill hearts" id="attempts-left" aria-label="Tries left">❤️❤️❤️</div>
+                <div class="pill honey-pill">🍯 <span id="honey-game">0</span></div>
+                <div class="pill">⏱️ <span id="timer">0s</span></div>
+            </div>
+
+            <div class="bee-track" aria-hidden="true">
+                <div class="bee-track-line"></div>
+                <div class="bee-track-fill" id="track-fill"></div>
+                <span class="bee-runner" id="bee-runner">🐝</span>
+                <span class="hive-goal">🍯</span>
+            </div>
+
+            <div class="buzz-row">
+                <div class="buzz mood-idle" id="game-buzz"></div>
+                <div id="feedback" class="bubble" role="status" aria-live="polite">Listen carefully!</div>
             </div>
 
             <div class="button-row" style="margin-bottom: 0.8rem;">
@@ -573,6 +1421,8 @@
 
             <input type="text" id="hidden-input" inputmode="none" autocomplete="off" autocapitalize="off"
                 spellcheck="false">
+
+            <div id="letter-bank" class="letter-bank hidden"></div>
 
             <div class="virtual-keyboard" id="virtual-keyboard">
                 <div class="keyboard-row">
@@ -613,22 +1463,28 @@
             <form id="answer-form">
                 <button type="submit" class="btn-main" style="margin-top: 2px; width: 100%;">Submit Answer</button>
             </form>
-
-            <div id="feedback" class="feedback"></div>
         </div>
 
         <!-- End Screen -->
         <div id="end-screen" class="hidden">
-            <h2>Game Over! 🎉</h2>
-            <p id="final-score"></p>
-            <p id="final-time"></p>
+            <div class="buzz large mood-cheer" id="end-buzz"></div>
+            <h2 id="end-title" style="margin: 0.2rem 0;">Game Over! 🎉</h2>
+            <div class="big-stars" id="big-stars"></div>
+            <p id="final-score" style="margin: 0.3rem 0; font-weight: 700; font-size: 1.1rem;"></p>
+            <div class="end-stats">
+                <span class="pill honey-pill">🍯 +<span id="end-honey">0</span> honey</span>
+                <span class="pill">⏱️ <span id="final-time">0s</span></span>
+            </div>
             <div id="new-record-tag" class="high-score-box hidden">🏆 New High Score! Saved to local records!</div>
+            <div id="new-stickers" class="new-stickers hidden"></div>
+            <div id="end-mastery" class="end-mastery hidden"></div>
+            <ul id="results-list" class="results-list" aria-label="Your words"></ul>
 
             <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; margin-top: 1rem;">
-                <button id="replay-same-btn" class="btn-action" style="width: 80%;">🔄 Play Same List Again</button>
                 <button id="review-btn" class="btn-review hidden" style="width: 80%;">🔁 Practice Missed Words (<span
                         id="missed-count">0</span>)</button>
-                <button id="restart-btn" class="btn-secondary" style="width: 80%;">🏠 Change List / Player</button>
+                <button id="replay-same-btn" class="btn-action" style="width: 80%;">🔄 Play Same List Again</button>
+                <button id="restart-btn" class="btn-secondary" style="width: 80%;">🏠 Pick Another Game</button>
             </div>
         </div>
     </div>
@@ -638,16 +1494,22 @@
         <div class="modal-content">
             <h2>❓ How to Play</h2>
             <ol style="line-height: 1.6;">
-                <li><strong>Learn:</strong> The game shows each spelling first. It says the word, spells the letters,
-                    and reads a sentence when the list has one.</li>
-                <li><strong>Listen:</strong> Then the quiz begins. <em>"🔊 Hear Word"</em> and <em>"🐢 Read Slow"</em>
-                    play the word again. If two words sound the same, the sentence tells you which spelling to use.
-                    The word is hidden in the sentence on screen.</li>
-                <li><strong>Spell:</strong> Type using your keyboard or tap the onscreen letter buttons. Click
-                    <strong>Submit</strong> or press <strong>Enter</strong>.</li>
-                <li><strong>Attempts:</strong> You get up to 3 tries per word. On your 2nd try, a letter grid will
-                    appear with hints!</li>
-                <li><strong>Streaks:</strong> Spell words correctly in a row to earn fire streaks 🔥!</li>
+                <li><strong>Pick a game:</strong> 🐝 <em>Spelling Bee</em> (hear it, spell it), 🔀 <em>Scramble</em>
+                    (tap the jumbled letters in order) or 🧩 <em>Missing Letters</em> (fill in the gaps).</li>
+                <li><strong>Learn:</strong> The game can show each spelling first. It says the word, spells the
+                    letters, and reads a sentence when the list has one.</li>
+                <li><strong>Listen:</strong> <em>"🔊 Hear Word"</em> and <em>"🐢 Read Slow"</em> play the word again. If
+                    two words sound the same, the sentence tells you which spelling to use.</li>
+                <li><strong>Spell:</strong> Type or tap the letters, then press <strong>Submit</strong> or
+                    <strong>Enter</strong>.</li>
+                <li><strong>Hearts:</strong> You get 3 tries ❤️❤️❤️ per word. After a miss, the letters you got right
+                    stay as grey hints.</li>
+                <li><strong>Honey 🍯:</strong> First try = 10 honey, second = 6, third = 3, plus bonus honey for 🔥
+                    streaks. Honey grows your bee rank!</li>
+                <li><strong>Stars ⭐:</strong> Spell a word right on the first try to earn a star. Three stars means
+                    you've <em>mastered</em> it. Missing it takes a star away, so keep practicing!</li>
+                <li><strong>Stickers 📒:</strong> Unlock stickers for streaks, perfect games, and practicing every
+                    school day.</li>
             </ol>
             <div style="text-align: center; margin-top: 1.2rem;">
                 <button id="close-help-btn" class="btn-main">Got It!</button>
@@ -655,18 +1517,36 @@
         </div>
     </div>
 
-    <!-- Advanced Settings Modal -->
+    <!-- Sticker Book Modal -->
+    <div id="stickers-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>📒 <span id="sticker-book-title">Sticker Book</span></h2>
+            <div id="sticker-grid" class="sticker-grid"></div>
+            <div style="text-align: center; margin-top: 1.2rem;">
+                <button id="close-stickers-btn" class="btn-main">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
     <div id="settings-modal" class="modal hidden">
         <div class="modal-content">
-            <h2>⚙️ Advanced Settings</h2>
+            <h2>⚙️ Settings</h2>
 
-            <label for="file-loader">📂 Load Word List (.json File):</label>
-            <input type="file" id="file-loader" accept=".json">
+            <div class="switch-row">
+                <label for="sfx-toggle">🔔 Sound effects (beeps &amp; chimes)</label>
+                <input type="checkbox" id="sfx-toggle" checked style="width: 22px; height: 22px;">
+            </div>
+            <p class="field-hint" style="margin: 0 0 1rem;">The game turns sound effects off while the reader is
+                talking. If the voice still sounds crackly on a phone, turn sound effects off.</p>
 
-            <label for="voice-select">🎙️ Reader Voice (Fallback System):</label>
+            <label for="voice-select">🎙️ Reader Voice:</label>
             <select id="voice-select">
                 <option value="">Loading voices...</option>
             </select>
+
+            <label for="file-loader">📂 Load Word List (.json File):</label>
+            <input type="file" id="file-loader" accept=".json">
 
             <div style="text-align: center; margin-top: 1.2rem;">
                 <button id="close-settings-btn" class="btn-main">Done</button>
@@ -675,18 +1555,57 @@
     </div>
 
     <script>
+        // ------------------------------------------------------------------
+        // Safe storage helpers (private windows can throw on localStorage)
+        // ------------------------------------------------------------------
+        function storeGet(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                return raw === null ? fallback : JSON.parse(raw);
+            } catch (_) {
+                return fallback;
+            }
+        }
+
+        function storeSet(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (_) { }
+        }
+
+        // ------------------------------------------------------------------
+        // Sound effects (Web Audio)
+        //
+        // Why the voice crackled on phones: the old code created an
+        // AudioContext on the first tap, resumed it on EVERY tap (including the
+        // "Hear Word" tap) and never let it sleep. A running AudioContext holds
+        // the phone's audio output at its own sample rate and buffer size, and
+        // the speech engine then gets mixed/resampled against it, which
+        // crackles on iOS and many Android phones.
+        //
+        // Now the context only runs while a sound effect is actually playing.
+        // It is suspended again right after, and speech always waits until it
+        // is suspended before talking.
+        // ------------------------------------------------------------------
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
         let masterGain = null;
         let lastTypeSoundTime = 0;
         let audioReadyPromise = null;
+        let sfxBusyUntil = 0; // audioCtx.currentTime when the last tone ends
+        let sfxIdleTimer = null;
+        let sfxEnabled = storeGet('spelling_bee_sfx', true) !== false;
+
+        function audioRunning() {
+            return Boolean(audioCtx && audioCtx.state === 'running');
+        }
 
         function initAudio() {
             if (!AudioContextClass) return Promise.resolve(false);
 
             if (!audioCtx) {
                 try {
-                    audioCtx = new AudioContextClass({latencyHint: 'interactive'});
+                    audioCtx = new AudioContextClass({latencyHint: 'balanced'});
                     masterGain = audioCtx.createGain();
                     masterGain.gain.value = 0.12;
                     masterGain.connect(audioCtx.destination);
@@ -708,8 +1627,30 @@
             return Promise.resolve(audioCtx.state === 'running');
         }
 
+        function scheduleSfxSleep() {
+            if (!audioCtx) return;
+            clearTimeout(sfxIdleTimer);
+            const remainingMs = Math.max(0, (sfxBusyUntil - audioCtx.currentTime) * 1000);
+            sfxIdleTimer = setTimeout(() => {
+                sfxIdleTimer = null;
+                if (audioRunning() && audioCtx.currentTime >= sfxBusyUntil) {
+                    audioCtx.suspend().catch(() => { });
+                }
+            }, remainingMs + 450);
+        }
+
+        // Resolves once the sound-effects engine is asleep, so speech has the
+        // audio output to itself.
+        function quietSfxForSpeech() {
+            if (!audioRunning()) return Promise.resolve();
+            clearTimeout(sfxIdleTimer);
+            const waitMs = Math.max(0, (sfxBusyUntil - audioCtx.currentTime) * 1000) + 40;
+            return new Promise(resolve => setTimeout(resolve, waitMs))
+                .then(() => (audioRunning() ? audioCtx.suspend().catch(() => { }) : null));
+        }
+
         function playTone(freq, startTime, duration, volume = 0.08, type = 'sine', endFreq = null) {
-            if (!audioCtx || !masterGain || audioCtx.state !== 'running') return;
+            if (!audioRunning() || !masterGain) return;
 
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
@@ -729,6 +1670,7 @@
             gain.connect(masterGain);
             osc.start(startTime);
             osc.stop(endTime + 0.005);
+            sfxBusyUntil = Math.max(sfxBusyUntil, endTime + 0.01);
 
             osc.addEventListener('ended', () => {
                 try {
@@ -738,10 +1680,22 @@
             }, {once: true});
         }
 
+        function speechIsActive() {
+            return Boolean(synth && (synth.speaking || synth.pending || speakTimer !== null || speechWaitingForSfx));
+        }
+
         function playSound(type) {
+            if (!sfxEnabled || !AudioContextClass) return;
+
+            // Never play a key click on top of the reader.
+            if (type === 'type' && speechIsActive()) return;
+            // A result chime means whatever was being read is finished with.
+            if (type !== 'type' && speechIsActive()) stopSpeaking();
+
             initAudio().then(ready => {
                 if (!ready || !audioCtx) return;
-                const now = audioCtx.currentTime;
+                if (type === 'type' && speechIsActive()) return;
+                const now = audioCtx.currentTime + 0.01;
 
                 if (type === 'type') {
                     if (now - lastTypeSoundTime < 0.055) return;
@@ -753,18 +1707,26 @@
                     });
                 } else if (type === 'wrong') {
                     playTone(145, now, 0.16, 0.065, 'triangle', 92);
+                } else if (type === 'sticker') {
+                    [783.99, 987.77, 1174.66, 1567.98].forEach((freq, idx) => {
+                        playTone(freq, now + idx * 0.06, 0.14, 0.06, 'sine');
+                    });
                 } else if (type === 'victory') {
                     [440, 554.37, 659.25, 880].forEach((freq, idx) => {
                         playTone(freq, now + idx * 0.105, 0.22, 0.08, 'sine');
                     });
                 }
+                scheduleSfxSleep();
             });
         }
 
-        // Canvas Confetti Generator
+        // ------------------------------------------------------------------
+        // Confetti
+        // ------------------------------------------------------------------
         const canvas = document.getElementById('confetti-canvas');
         const ctx = canvas.getContext('2d');
         let confettiParticles = [];
+        let confettiRunning = false;
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -774,6 +1736,7 @@
         resizeCanvas();
 
         function triggerConfetti(count = 70) {
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             confettiParticles = [];
             const colors = ['#f1c40f', '#2ecc71', '#e74c3c', '#3498db', '#9b59b6', '#ff007f', '#00f0ff'];
             for (let i = 0; i < count; i++) {
@@ -787,7 +1750,10 @@
                     life: 1
                 });
             }
-            animateConfetti();
+            if (!confettiRunning) {
+                confettiRunning = true;
+                requestAnimationFrame(animateConfetti);
+            }
         }
 
         function animateConfetti() {
@@ -806,7 +1772,11 @@
                 }
             });
             ctx.globalAlpha = 1;
-            if (active) requestAnimationFrame(animateConfetti);
+            if (active) {
+                requestAnimationFrame(animateConfetti);
+            } else {
+                confettiRunning = false;
+            }
         }
 
         function shuffleArray(array) {
@@ -817,6 +1787,13 @@
             return array;
         }
 
+        function pick(list) {
+            return list[Math.floor(Math.random() * list.length)];
+        }
+
+        // ------------------------------------------------------------------
+        // Game state
+        // ------------------------------------------------------------------
         let words = [];
         let rawActiveList = [];
         let missedWords = [];
@@ -834,69 +1811,411 @@
         let playerName = 'Speller 1';
         let ghostMask = [];
 
+        let selectedMode = storeGet('spelling_bee_mode', 'classic');
+        let gameMode = 'classic';
+        let blankPositions = [];
+        let scrambleLetters = [];
+        let inputLocked = false;
+        let gameHoney = 0;
+        let wordResults = [];
+        let bestStreakThisGame = 0;
+        let gameNewStickers = [];
+        let currentListLabel = '';
+        let profile = null;
+        let profileRankBefore = null;
+
         const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
 
-        const serverListSelect = document.getElementById('server-list-select');
-        const setupScreen = document.getElementById('setup-screen');
-        const learnScreen = document.getElementById('learn-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const endScreen = document.getElementById('end-screen');
+        const $ = (id) => document.getElementById(id);
+        const serverListSelect = $('server-list-select');
+        const setupScreen = $('setup-screen');
+        const learnScreen = $('learn-screen');
+        const gameScreen = $('game-screen');
+        const endScreen = $('end-screen');
 
-        const helpBtn = document.getElementById('help-btn');
-        const settingsBtn = document.getElementById('settings-btn');
-        const helpModal = document.getElementById('help-modal');
-        const settingsModal = document.getElementById('settings-modal');
-        const closeHelpBtn = document.getElementById('close-help-btn');
-        const closeSettingsBtn = document.getElementById('close-settings-btn');
+        const helpModal = $('help-modal');
+        const settingsModal = $('settings-modal');
+        const stickersModal = $('stickers-modal');
 
-        const fileLoader = document.getElementById('file-loader');
-        const playerNameInput = document.getElementById('player-name-input');
-        const voiceSelect = document.getElementById('voice-select');
-        const wordInput = document.getElementById('word-input');
-        const hiddenInput = document.getElementById('hidden-input');
-        const tilesContainer = document.getElementById('tiles-container');
-        const feedback = document.getElementById('feedback');
+        const fileLoader = $('file-loader');
+        const playerNameInput = $('player-name-input');
+        const voiceSelect = $('voice-select');
+        const wordInput = $('word-input');
+        const wordEditor = $('word-editor');
+        const wordEditorSummary = $('word-editor-summary');
+        const hiddenInput = $('hidden-input');
+        const tilesContainer = $('tiles-container');
+        const feedback = $('feedback');
+        const learnFirstBox = $('learn-first');
+        const sfxToggle = $('sfx-toggle');
 
-        const scoreEl = document.getElementById('score');
-        const totalWordsEl = document.getElementById('total-words');
-        const streakBox = document.getElementById('streak-box');
-        const attemptsLeftEl = document.getElementById('attempts-left');
-        const timerEl = document.getElementById('timer');
-        const finalScoreEl = document.getElementById('final-score');
-        const finalTimeEl = document.getElementById('final-time');
-        const savedScoreDisplay = document.getElementById('saved-score-display');
-        const newRecordTag = document.getElementById('new-record-tag');
-        const reviewBtn = document.getElementById('review-btn');
-        const replaySameBtn = document.getElementById('replay-same-btn');
-        const missedCountEl = document.getElementById('missed-count');
+        const scoreEl = $('score');
+        const totalWordsEl = $('total-words');
+        const streakBox = $('streak-box');
+        const attemptsLeftEl = $('attempts-left');
+        const honeyGameEl = $('honey-game');
+        const timerEl = $('timer');
+        const trackFill = $('track-fill');
+        const beeRunner = $('bee-runner');
+        const finalScoreEl = $('final-score');
+        const finalTimeEl = $('final-time');
+        const savedScoreDisplay = $('saved-score-display');
+        const newRecordTag = $('new-record-tag');
+        const reviewBtn = $('review-btn');
+        const replaySameBtn = $('replay-same-btn');
+        const missedCountEl = $('missed-count');
 
-        const startBtn = document.getElementById('start-btn');
-        const exportBtn = document.getElementById('export-btn');
-        const repeatBtn = document.getElementById('repeat-btn');
-        const slowBtn = document.getElementById('slow-btn');
-        const learnProgressEl = document.getElementById('learn-progress');
-        const learnTotalEl = document.getElementById('learn-total');
-        const learnKickerEl = document.getElementById('learn-kicker');
-        const learnTiles = document.getElementById('learn-tiles');
-        const learnSentenceEl = document.getElementById('learn-sentence');
-        const learnHearBtn = document.getElementById('learn-hear-btn');
-        const learnSlowBtn = document.getElementById('learn-slow-btn');
-        const learnNextBtn = document.getElementById('learn-next-btn');
-        const learnSkipBtn = document.getElementById('learn-skip-btn');
-        const learnBackBtn = document.getElementById('learn-back-btn');
-        const contextLine = document.getElementById('context-line');
-        const contextLabel = document.getElementById('context-label');
-        const contextText = document.getElementById('context-text');
-        const restartBtn = document.getElementById('restart-btn');
-        const answerForm = document.getElementById('answer-form');
-        const virtualKeyboard = document.getElementById('virtual-keyboard');
+        const startBtn = $('start-btn');
+        const exportBtn = $('export-btn');
+        const repeatBtn = $('repeat-btn');
+        const slowBtn = $('slow-btn');
+        const learnProgressEl = $('learn-progress');
+        const learnTotalEl = $('learn-total');
+        const learnKickerEl = $('learn-kicker');
+        const learnTiles = $('learn-tiles');
+        const learnStarsEl = $('learn-stars');
+        const learnSentenceEl = $('learn-sentence');
+        const learnHearBtn = $('learn-hear-btn');
+        const learnSlowBtn = $('learn-slow-btn');
+        const learnNextBtn = $('learn-next-btn');
+        const learnSkipBtn = $('learn-skip-btn');
+        const learnBackBtn = $('learn-back-btn');
+        const contextLine = $('context-line');
+        const contextLabel = $('context-label');
+        const contextText = $('context-text');
+        const restartBtn = $('restart-btn');
+        const answerForm = $('answer-form');
+        const virtualKeyboard = $('virtual-keyboard');
+        const letterBank = $('letter-bank');
+        const trickyBtn = $('tricky-btn');
 
-        helpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
-        closeHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
+        $('help-btn').addEventListener('click', () => helpModal.classList.remove('hidden'));
+        $('close-help-btn').addEventListener('click', () => helpModal.classList.add('hidden'));
+        $('settings-btn').addEventListener('click', () => settingsModal.classList.remove('hidden'));
+        $('close-settings-btn').addEventListener('click', () => settingsModal.classList.add('hidden'));
+        $('stickers-btn').addEventListener('click', () => {
+            renderStickerBook();
+            stickersModal.classList.remove('hidden');
+        });
+        $('close-stickers-btn').addEventListener('click', () => stickersModal.classList.add('hidden'));
+        [helpModal, settingsModal, stickersModal].forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.add('hidden');
+            });
+        });
 
-        settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
-        closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+        sfxToggle.checked = sfxEnabled;
+        sfxToggle.addEventListener('change', () => {
+            sfxEnabled = sfxToggle.checked;
+            storeSet('spelling_bee_sfx', sfxEnabled);
+            if (!sfxEnabled && audioRunning()) audioCtx.suspend().catch(() => { });
+        });
 
+        // ------------------------------------------------------------------
+        // Buzz the bee
+        // ------------------------------------------------------------------
+        const BUZZ_SVG = `
+<svg viewBox="0 0 100 100" aria-hidden="true">
+  <g class="wings">
+    <ellipse cx="30" cy="34" rx="17" ry="11" fill="#e0f2fe" stroke="#93c5fd" stroke-width="2" transform="rotate(-30 30 34)"/>
+    <ellipse cx="70" cy="34" rx="17" ry="11" fill="#e0f2fe" stroke="#93c5fd" stroke-width="2" transform="rotate(30 70 34)"/>
+  </g>
+  <path d="M41 32 Q36 18 30 14" stroke="#2c3e50" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M59 32 Q64 18 70 14" stroke="#2c3e50" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="30" cy="13" r="4" fill="#2c3e50"/>
+  <circle cx="70" cy="13" r="4" fill="#2c3e50"/>
+  <clipPath id="CLIPID"><circle cx="50" cy="60" r="30"/></clipPath>
+  <circle cx="50" cy="60" r="30" fill="#f7d02c"/>
+  <g clip-path="url(#CLIPID)">
+    <rect x="15" y="72" width="70" height="7" fill="#2c3e50"/>
+    <rect x="15" y="84" width="70" height="7" fill="#2c3e50"/>
+  </g>
+  <circle cx="50" cy="60" r="30" fill="none" stroke="#2c3e50" stroke-width="3"/>
+  <circle cx="40" cy="52" r="5.5" fill="#2c3e50"/>
+  <circle cx="60" cy="52" r="5.5" fill="#2c3e50"/>
+  <circle cx="41.8" cy="50.2" r="1.8" fill="#fff"/>
+  <circle cx="61.8" cy="50.2" r="1.8" fill="#fff"/>
+  <ellipse cx="31" cy="61" rx="5" ry="3" fill="#f5a3a3" opacity="0.8"/>
+  <ellipse cx="69" cy="61" rx="5" ry="3" fill="#f5a3a3" opacity="0.8"/>
+  <path class="m m-smile" d="M42 62 Q50 69 58 62" stroke="#2c3e50" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path class="m m-big" d="M40 60 Q50 74 60 60 Z" fill="#2c3e50" stroke="#2c3e50" stroke-width="2" stroke-linejoin="round"/>
+  <path class="m m-frown" d="M43 67 Q50 61 57 67" stroke="#2c3e50" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <ellipse class="m m-oh" cx="50" cy="65" rx="3.5" ry="4.2" fill="#2c3e50"/>
+</svg>`;
+
+        let buzzCounter = 0;
+        function mountBuzz(el) {
+            el.innerHTML = BUZZ_SVG.replace(/CLIPID/g, `buzzclip${buzzCounter++}`);
+        }
+        document.querySelectorAll('.buzz').forEach(mountBuzz);
+
+        function setBuzz(el, mood) {
+            el.classList.remove('mood-idle', 'mood-happy', 'mood-cheer', 'mood-sad', 'mood-think');
+            // Restart the CSS animation for repeated moods.
+            void el.offsetWidth;
+            el.classList.add(`mood-${mood}`);
+        }
+
+        const gameBuzz = $('game-buzz');
+        const learnBuzz = $('learn-buzz');
+        const endBuzz = $('end-buzz');
+
+        const LINES = {
+            start: ['Listen carefully, then spell it!', "Here's your next word!", 'You can do it!', 'Ready? Spell this one!', 'Ears on! 👂'],
+            startScramble: ['Tap the letters in the right order!', 'Unjumble me!', 'Which letter comes first?'],
+            startMissing: ['Fill in the missing letters!', 'Some letters flew away! 🐝', 'Find the missing pieces!'],
+            praise: ['Bee-autiful!', 'Buzz-tastic!', 'You nailed it!', 'Sweet as honey!', 'Super speller!', 'Hive-five! 🖐️', 'Wow, great spelling!'],
+            fixed: ['You got it! Great fixing!', 'Way to keep trying!', 'Nice comeback!'],
+            retry: ['So close! Green letters were right.', 'Almost! Listen again and try.', 'Oops! The grey letters are hints.'],
+            missed: ["That one's tricky! Here's how it's spelled.", "Tricky word! We'll practice it again."]
+        };
+
+        function setBubble(text, className = '') {
+            feedback.textContent = text;
+            feedback.className = `bubble ${className}`.trim();
+        }
+
+        let toastTimer = null;
+        const toastQueue = [];
+        function showToast(text) {
+            toastQueue.push(text);
+            if (toastTimer === null) nextToast();
+        }
+
+        function nextToast() {
+            const toast = $('toast');
+            const text = toastQueue.shift();
+            if (!text) {
+                toast.classList.add('hidden');
+                toastTimer = null;
+                return;
+            }
+            toast.textContent = text;
+            toast.classList.add('hidden');
+            void toast.offsetWidth;
+            toast.classList.remove('hidden');
+            toastTimer = setTimeout(nextToast, 2600);
+        }
+
+        function showHoneyFloat(text) {
+            const float = document.createElement('div');
+            float.className = 'honey-float';
+            float.textContent = text;
+            float.style.top = `${Math.max(0, tilesContainer.offsetTop - 10)}px`;
+            gameScreen.appendChild(float);
+            setTimeout(() => float.remove(), 1300);
+        }
+
+        // ------------------------------------------------------------------
+        // Player profile: honey, rank, stickers, mastery, practice days
+        // ------------------------------------------------------------------
+        const RANKS = [
+            {min: 0, name: 'Bee Egg', emoji: '🥚'},
+            {min: 100, name: 'Little Larva', emoji: '🐛'},
+            {min: 250, name: 'Worker Bee', emoji: '🐝'},
+            {min: 500, name: 'Busy Bee', emoji: '🌼'},
+            {min: 900, name: 'Honey Maker', emoji: '🍯'},
+            {min: 1400, name: 'Hive Hero', emoji: '🦸'},
+            {min: 2000, name: 'Queen Bee', emoji: '👑'},
+            {min: 3000, name: 'Spelling Legend', emoji: '🌟'}
+        ];
+
+        const STICKERS = [
+            {id: 'first', emoji: '🐣', name: 'First Flight', how: 'Finish your first game'},
+            {id: 'streak5', emoji: '🔥', name: 'Hot Streak', how: '5 words right in a row'},
+            {id: 'streak10', emoji: '☄️', name: 'Unstoppable', how: '10 words right in a row'},
+            {id: 'perfect', emoji: '🌟', name: 'Perfect Hive', how: 'Every word right on the first try (5+ words)'},
+            {id: 'speedy', emoji: '⚡', name: 'Speedy Bee', how: 'All right, under 8 seconds a word (5+ words)'},
+            {id: 'scramble', emoji: '🔀', name: 'Unscrambler', how: 'Finish a Scramble game'},
+            {id: 'missing', emoji: '🔍', name: 'Letter Detective', how: 'Finish a Missing Letters game'},
+            {id: 'comeback', emoji: '💪', name: 'Comeback Kid', how: 'Fix a missed word in practice'},
+            {id: 'master', emoji: '👑', name: 'Word Wizard', how: 'Master every word on a list'},
+            {id: 'days3', emoji: '📅', name: 'Busy Bee', how: 'Practice 3 school days in a row'},
+            {id: 'days5', emoji: '🏆', name: 'Full Week', how: 'Practice 5 school days in a row'},
+            {id: 'honey100', emoji: '🍯', name: 'Honey Pot', how: 'Collect 100 honey'},
+            {id: 'honey1000', emoji: '🏺', name: 'Honey Jar Hero', how: 'Collect 1,000 honey'}
+        ];
+
+        function blankProfile() {
+            return {honey: 0, stickers: {}, days: [], mastery: {}, games: 0, bestStreak: 0};
+        }
+
+        function profileKey(name) {
+            return `spelling_bee_profile_${name}`;
+        }
+
+        function loadProfile(name) {
+            const saved = storeGet(profileKey(name), null);
+            const base = blankProfile();
+            if (!saved || typeof saved !== 'object') return base;
+            return {
+                honey: Number(saved.honey) || 0,
+                stickers: saved.stickers && typeof saved.stickers === 'object' ? saved.stickers : {},
+                days: Array.isArray(saved.days) ? saved.days : [],
+                mastery: saved.mastery && typeof saved.mastery === 'object' ? saved.mastery : {},
+                games: Number(saved.games) || 0,
+                bestStreak: Number(saved.bestStreak) || 0
+            };
+        }
+
+        function saveProfile() {
+            if (profile) storeSet(profileKey(playerName), profile);
+        }
+
+        function currentName() {
+            return playerNameInput.value.trim() || 'Speller 1';
+        }
+
+        function rankFor(honey) {
+            let index = 0;
+            RANKS.forEach((rank, i) => {
+                if (honey >= rank.min) index = i;
+            });
+            return index;
+        }
+
+        function dateKey(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        // Counts practice days in a row. Weekends never break the streak,
+        // and today doesn't count against it until the day is over.
+        function dayStreak(days) {
+            const played = new Set(days);
+            const cursor = new Date();
+            let count = 0;
+            for (let i = 0; i < 400; i++) {
+                const key = dateKey(cursor);
+                const weekday = cursor.getDay();
+                if (played.has(key)) {
+                    count++;
+                } else if (i === 0 || weekday === 0 || weekday === 6) {
+                    // not yet today, or a weekend: skip
+                } else {
+                    break;
+                }
+                cursor.setDate(cursor.getDate() - 1);
+            }
+            return count;
+        }
+
+        function wordStars(word) {
+            if (!profile) return 0;
+            return Math.max(0, Math.min(3, Number(profile.mastery[word.toLowerCase()]) || 0));
+        }
+
+        function changeStars(word, delta) {
+            const key = word.toLowerCase();
+            const next = Math.max(0, Math.min(3, wordStars(word) + delta));
+            profile.mastery[key] = next;
+            return next;
+        }
+
+        function starString(count) {
+            return '⭐'.repeat(count) + '☆'.repeat(3 - count);
+        }
+
+        function awardSticker(id) {
+            if (!profile || profile.stickers[id]) return false;
+            const sticker = STICKERS.find(s => s.id === id);
+            if (!sticker) return false;
+            profile.stickers[id] = dateKey(new Date());
+            gameNewStickers.push(sticker);
+            showToast(`New sticker! ${sticker.emoji} ${sticker.name}`);
+            playSound('sticker');
+            return true;
+        }
+
+        function renderPlayerCard() {
+            profile = loadProfile(currentName());
+            const rankIndex = rankFor(profile.honey);
+            const rank = RANKS[rankIndex];
+            const next = RANKS[rankIndex + 1];
+            $('rank-emoji').textContent = rank.emoji;
+            $('rank-name').textContent = rank.name;
+            $('honey-total').textContent = profile.honey.toLocaleString();
+            $('day-streak').textContent = dayStreak(profile.days);
+            $('sticker-count').textContent = `${Object.keys(profile.stickers).length}/${STICKERS.length}`;
+            if (next) {
+                const span = next.min - rank.min;
+                const pct = Math.min(100, ((profile.honey - rank.min) / span) * 100);
+                $('rank-fill').style.width = `${pct}%`;
+                $('rank-next').textContent = `${next.min - profile.honey} more honey to become ${next.emoji} ${next.name}`;
+            } else {
+                $('rank-fill').style.width = '100%';
+                $('rank-next').textContent = 'Top rank! You are amazing!';
+            }
+        }
+
+        function renderStickerBook() {
+            const grid = $('sticker-grid');
+            grid.replaceChildren();
+            $('sticker-book-title').textContent = `${currentName()}'s Sticker Book`;
+            STICKERS.forEach(sticker => {
+                const earned = Boolean(profile && profile.stickers[sticker.id]);
+                const card = document.createElement('div');
+                card.className = `sticker ${earned ? 'earned' : 'locked'}`;
+                const emoji = document.createElement('span');
+                emoji.className = 's-emoji';
+                emoji.textContent = sticker.emoji;
+                const name = document.createElement('b');
+                name.textContent = earned ? sticker.name : '???';
+                const how = document.createElement('small');
+                how.textContent = sticker.how;
+                card.append(emoji, name, how);
+                grid.appendChild(card);
+            });
+        }
+
+        function renderProgressCard() {
+            const entries = parseEditorText(wordInput.value);
+            const card = $('progress-card');
+            wordEditorSummary.textContent = entries.length
+                ? `✏️ See or edit the word list (${entries.length} words)`
+                : '✏️ Type in a word list';
+            if (!entries.length) {
+                card.classList.add('hidden');
+                return;
+            }
+            card.classList.remove('hidden');
+            const chips = $('word-chips');
+            chips.replaceChildren();
+            let mastered = 0;
+            entries.forEach(entry => {
+                const stars = wordStars(entry.word);
+                if (stars >= 3) mastered++;
+                const chip = document.createElement('span');
+                chip.className = `word-chip${stars >= 3 ? ' mastered' : ''}`;
+                chip.textContent = entry.word;
+                const small = document.createElement('small');
+                small.textContent = starString(stars);
+                small.setAttribute('aria-label', `${stars} of 3 stars`);
+                chip.appendChild(small);
+                chips.appendChild(chip);
+            });
+            $('progress-title').textContent = currentListLabel || 'Your list';
+            $('progress-count').textContent = mastered === entries.length
+                ? `All ${entries.length} mastered! 👑`
+                : `${mastered} / ${entries.length} mastered`;
+            $('mastery-fill').style.width = `${(mastered / entries.length) * 100}%`;
+            const tricky = entries.length - mastered;
+            trickyBtn.textContent = tricky
+                ? `🎯 Practice tricky words (${tricky})`
+                : '🎯 All mastered! Play them all again';
+        }
+
+        function refreshSetup() {
+            renderPlayerCard();
+            renderProgressCard();
+            updateHighScoreDisplay();
+        }
+
+        // ------------------------------------------------------------------
+        // Word lists
+        // ------------------------------------------------------------------
         async function loadServerManifest() {
             try {
                 const response = await fetch('word-lists/manifest.json');
@@ -931,10 +2250,24 @@
                 const entries = normalizeList(await response.json());
                 if (!entries.length) throw new Error('Empty list');
                 wordInput.value = formatListForEditor(entries);
-                updateHighScoreDisplay();
+                currentListLabel = serverListSelect.selectedOptions[0]?.textContent || '';
+                wordEditor.open = false;
+                refreshSetup();
             } catch (err) {
                 alert(`Could not load server list: ${selectedFile}`);
             }
+        });
+
+        let editorTimer = null;
+        wordInput.addEventListener('input', () => {
+            clearTimeout(editorTimer);
+            editorTimer = setTimeout(() => {
+                if (serverListSelect.value !== 'custom') {
+                    serverListSelect.value = 'custom';
+                    currentListLabel = 'Your list';
+                }
+                renderProgressCard();
+            }, 350);
         });
 
         exportBtn.addEventListener('click', () => {
@@ -972,14 +2305,17 @@
             URL.revokeObjectURL(url);
         });
 
-        playerNameInput.addEventListener('input', updateHighScoreDisplay);
+        let nameTimer = null;
+        playerNameInput.addEventListener('input', () => {
+            clearTimeout(nameTimer);
+            nameTimer = setTimeout(refreshSetup, 250);
+        });
 
         function updateHighScoreDisplay() {
-            const name = playerNameInput.value.trim() || 'Speller 1';
-            const savedData = localStorage.getItem(`spelling_bee_${name}`);
-            if (savedData) {
-                const parsed = JSON.parse(savedData);
-                savedScoreDisplay.innerHTML = `🏆 High Score for "${name}": ${parsed.score}/${parsed.total} in ${parsed.time}s`;
+            const name = currentName();
+            const parsed = storeGet(`spelling_bee_${name}`, null);
+            if (parsed && typeof parsed === 'object') {
+                savedScoreDisplay.textContent = `🏆 High Score for "${name}": ${parsed.score}/${parsed.total} in ${parsed.time}s`;
                 savedScoreDisplay.classList.remove('hidden');
             } else {
                 savedScoreDisplay.classList.add('hidden');
@@ -996,8 +2332,10 @@
                     const entries = normalizeList(JSON.parse(e.target.result));
                     if (entries.length) {
                         wordInput.value = formatListForEditor(entries);
+                        serverListSelect.value = 'custom';
+                        currentListLabel = file.name.replace(/\.json$/i, '');
                         settingsModal.classList.add('hidden');
-                        updateHighScoreDisplay();
+                        refreshSetup();
                     } else {
                         alert('JSON file must contain a list of words.');
                     }
@@ -1008,12 +2346,33 @@
             reader.readAsText(file);
         });
 
-        // Speech Engine Configuration & Safe Async Loader
+        // Mode picker
+        const modeCards = Array.from(document.querySelectorAll('.mode-card'));
+        function selectMode(mode) {
+            if (!['classic', 'scramble', 'missing'].includes(mode)) mode = 'classic';
+            selectedMode = mode;
+            storeSet('spelling_bee_mode', mode);
+            modeCards.forEach(card => {
+                const on = card.dataset.mode === mode;
+                card.classList.toggle('selected', on);
+                card.setAttribute('aria-checked', on ? 'true' : 'false');
+            });
+        }
+        modeCards.forEach(card => card.addEventListener('click', () => selectMode(card.dataset.mode)));
+        selectMode(selectedMode);
+
+        learnFirstBox.checked = storeGet('spelling_bee_learn_first', true) !== false;
+        learnFirstBox.addEventListener('change', () => storeSet('spelling_bee_learn_first', learnFirstBox.checked));
+
+        // ------------------------------------------------------------------
+        // Speech engine
+        // ------------------------------------------------------------------
         let speechRequestId = 0;
         let speechUnlockStarted = false;
         let speechVoicesReady = false;
         let userChoseVoice = false;
         let populatingVoices = false;
+        let speechWaitingForSfx = false;
 
         function normalizeVoiceLang(lang) {
             return String(lang || '').replace(/_/g, '-').toLowerCase();
@@ -1061,9 +2420,10 @@
             if (!voices.length) return;
 
             speechVoicesReady = true;
+            const savedName = storeGet('spelling_bee_voice', '');
             const previousName = userChoseVoice
                 ? (voiceSelect.selectedOptions[0]?.getAttribute('data-name') || '')
-                : '';
+                : savedName;
             const english = voices.filter(v => /^en([_-]|$)/i.test(v.lang));
             const displayList = english.length ? english : voices;
             const best = chooseBestVoice();
@@ -1092,6 +2452,8 @@
             if (populatingVoices) return;
             userChoseVoice = true;
             selectedVoice = resolveSelectedVoice();
+            storeSet('spelling_bee_voice', selectedVoice ? selectedVoice.name : '');
+            speakPhrase('This is how I sound.');
         });
 
         if (synth) {
@@ -1243,6 +2605,7 @@
 
         function stopSpeaking() {
             speechRequestId++;
+            speechWaitingForSfx = false;
             clearScheduledSpeech();
             clearSpeechWatch();
             activeUtterance = null;
@@ -1302,7 +2665,7 @@
             }, 1000);
         }
 
-        function speakPhrase(phrase, slowDown = false) {
+        function speakPhrase(phrase, slowDown = false, onDone = null) {
             if (!phrase) return;
             if (!synth) {
                 console.warn('SpeechSynthesis is not available in this browser.');
@@ -1316,6 +2679,22 @@
 
             if (!speechVoicesReady && synth.getVoices().length) populateVoices();
 
+            // Give the reader the audio output to itself. When the effects
+            // engine is already asleep (the usual case) speak right away, still
+            // inside the tap, which iOS needs for the first phrase.
+            if (audioRunning()) {
+                speechWaitingForSfx = true;
+                quietSfxForSpeech().then(() => {
+                    if (requestId !== speechRequestId) return;
+                    speechWaitingForSfx = false;
+                    speakNow(text, slowDown, requestId, onDone);
+                });
+                return;
+            }
+            speakNow(text, slowDown, requestId, onDone);
+        }
+
+        function speakNow(text, slowDown, requestId, onDone = null) {
             const busy = Boolean(synth.speaking || synth.pending);
             if (busy) {
                 try {
@@ -1329,6 +2708,7 @@
 
             const startedAt = Date.now();
             const start = () => {
+                speakTimer = null;
                 if (requestId !== speechRequestId) return;
                 const stillBusy = Boolean(synth.speaking || synth.pending);
                 if (stillBusy && Date.now() - startedAt < 400) {
@@ -1343,10 +2723,7 @@
 
                     const utterance = new SpeechSynthesisUtterance(text);
                     utterance.lang = voice?.lang || 'en-US';
-                    if (voice) {
-                        utterance.voice = voice;
-                        if (voice.voiceURI) utterance.voiceURI = voice.voiceURI;
-                    }
+                    if (voice) utterance.voice = voice;
                     // Rates under about 0.5 make phone voices time-stretch and crackle.
                     utterance.rate = slowDown ? 0.75 : 1;
                     utterance.pitch = 1;
@@ -1357,6 +2734,13 @@
                         if (reason === 'interrupted' || reason === 'canceled' || reason === 'cancelled') return;
                         console.warn('Speech synthesis error:', reason || event);
                     };
+                    if (onDone) {
+                        const done = () => {
+                            if (requestId === speechRequestId) onDone();
+                        };
+                        utterance.addEventListener('end', done, {once: true});
+                        utterance.addEventListener('error', done, {once: true});
+                    }
                     holdUtterance(utterance);
                     synth.speak(utterance);
                     armSpeechWatch(requestId);
@@ -1372,21 +2756,41 @@
             }
         }
 
-        function speakEntry(entry, slowDown = false, spellLetters = false) {
+        function speakEntry(entry, slowDown = false, spellLetters = false, onDone = null) {
             const phrase = phraseFor(entry, spellLetters);
-            if (phrase) speakPhrase(phrase, slowDown);
+            if (phrase) speakPhrase(phrase, slowDown, onDone);
         }
 
+        // Stop talking and let the audio hardware sleep when the tab is hidden.
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopSpeaking();
+                if (audioRunning()) audioCtx.suspend().catch(() => { });
+            }
+        });
+
+        // ------------------------------------------------------------------
+        // Buttons
+        // ------------------------------------------------------------------
         startBtn.addEventListener('click', () => {
             unlockSpeech();
             isReviewMode = false;
             startGame();
         });
 
+        trickyBtn.addEventListener('click', () => {
+            unlockSpeech();
+            refreshSetup();
+            const entries = parseEditorText(wordInput.value);
+            const tricky = entries.filter(entry => wordStars(entry.word) < 3);
+            isReviewMode = false;
+            startGame(tricky.length ? tricky : entries, {setActive: true});
+        });
+
         replaySameBtn.addEventListener('click', () => {
             unlockSpeech();
             isReviewMode = false;
-            startGame(copyEntries(rawActiveList), {skipLearn: true});
+            startGame(copyEntries(rawActiveList), {skipLearn: true, keepMode: true});
         });
 
         repeatBtn.addEventListener('click', () => {
@@ -1422,6 +2826,7 @@
             stopSpeaking();
             learnScreen.classList.add('hidden');
             setupScreen.classList.remove('hidden');
+            refreshSetup();
         });
         restartBtn.addEventListener('click', resetGame);
         reviewBtn.addEventListener('click', startReviewMode);
@@ -1434,33 +2839,10 @@
             }
         });
 
-        virtualKeyboard.addEventListener('click', (e) => {
-            const keyBtn = e.target.closest('.key');
-            if (!keyBtn) return;
-            const keyValue = keyBtn.getAttribute('data-key');
-
-            if (keyValue === 'BACK') {
-                prepareRetryEntry();
-                if (hiddenInput.value.length > 0) {
-                    hiddenInput.value = hiddenInput.value.slice(0, -1);
-                    playSound('type');
-                    updateTilesDisplay();
-                }
-            } else {
-                prepareRetryEntry();
-                const targetWord = entryWord(words[currentIndex]);
-                if (currentAttempts < maxAttempts && hiddenInput.value.length >= targetWord.length) {
-                    return;
-                }
-                hiddenInput.value += keyValue;
-                playSound('type');
-                updateTilesDisplay();
-            }
-        });
-
+        // A tap only unlocks speech now. It no longer wakes the sound-effects
+        // engine; that only happens when a sound effect actually plays.
         document.addEventListener('pointerdown', (e) => {
             unlockSpeech();
-            initAudio();
 
             if (!gameScreen.classList.contains('hidden') && !window.matchMedia("(pointer: coarse)").matches) {
                 const tag = e.target.tagName;
@@ -1470,6 +2852,9 @@
             }
         }, {passive: true});
 
+        // ------------------------------------------------------------------
+        // Learn screen
+        // ------------------------------------------------------------------
         function showLearnCard() {
             const entry = learnEntries[learnIndex];
             const word = entryWord(entry);
@@ -1480,14 +2865,18 @@
             learnKickerEl.textContent = sentence
                 ? 'Listen, look at the spelling, then hear the word in a sentence.'
                 : 'Listen, then look at each letter.';
+            setBuzz(learnBuzz, 'idle');
 
             learnTiles.replaceChildren();
             for (const char of word) {
                 const tile = document.createElement('div');
-                tile.className = 'tile correct';
+                tile.className = 'tile correct pop';
                 tile.textContent = char.toUpperCase();
                 learnTiles.appendChild(tile);
             }
+
+            const stars = wordStars(word);
+            learnStarsEl.textContent = stars >= 3 ? `${starString(stars)} Mastered!` : starString(stars);
 
             if (sentence) {
                 renderSentence(learnSentenceEl, word, sentence, 'highlight');
@@ -1496,7 +2885,7 @@
             }
 
             const lastCard = learnIndex >= learnEntries.length - 1;
-            learnNextBtn.textContent = lastCard ? 'Start Spelling!' : 'Next Word';
+            learnNextBtn.textContent = lastCard ? 'Start Spelling! 🐝' : 'Next Word ➡️';
             speakEntry(entry, false, true);
         }
 
@@ -1514,16 +2903,29 @@
             renderSentence(contextText, word, sentence, reveal ? 'highlight' : 'blank');
         }
 
+        // ------------------------------------------------------------------
+        // Game flow
+        // ------------------------------------------------------------------
         function beginQuiz(entries) {
             words = shuffleArray(copyEntries(entries));
             currentIndex = 0;
             score = 0;
             streak = 0;
+            gameHoney = 0;
+            wordResults = [];
+            bestStreakThisGame = 0;
+            gameNewStickers = [];
             streakBox.textContent = '🔥 0';
+            streakBox.classList.remove('hot');
+            honeyGameEl.textContent = '0';
             totalWordsEl.textContent = words.length;
             scoreEl.textContent = score;
 
+            letterBank.classList.toggle('hidden', gameMode !== 'scramble');
+            virtualKeyboard.classList.toggle('hidden', gameMode === 'scramble');
+
             startTime = Date.now();
+            totalElapsedSeconds = 0;
             timerEl.textContent = '0s';
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
@@ -1535,24 +2937,26 @@
             learnScreen.classList.add('hidden');
             endScreen.classList.add('hidden');
             gameScreen.classList.remove('hidden');
-            feedback.textContent = '';
             playNextWord();
         }
 
         function startGame(customList = null, options = {}) {
-            const skipLearn = Boolean(options.skipLearn) || isReviewMode;
+            const skipLearn = Boolean(options.skipLearn) || isReviewMode || !learnFirstBox.checked;
             const entries = customList ? normalizeList(customList) : parseEditorText(wordInput.value);
             if (!entries.length) {
                 alert('Please select a list or enter words first!');
                 return;
             }
 
-            if (!customList) {
+            if (!customList || options.setActive) {
                 rawActiveList = copyEntries(entries);
             }
             if (!isReviewMode) missedWords = [];
+            if (!options.keepMode) gameMode = selectedMode;
 
-            playerName = playerNameInput.value.trim() || 'Speller 1';
+            playerName = currentName();
+            profile = loadProfile(playerName);
+            profileRankBefore = rankFor(profile.honey);
             selectedVoice = resolveSelectedVoice();
 
             if (!skipLearn) {
@@ -1570,18 +2974,176 @@
             beginQuiz(entries);
         }
 
+        // --- Mode helpers ---------------------------------------------------
+        function isLetter(ch) {
+            return /[a-z]/i.test(ch);
+        }
+
+        function pickBlanks(word) {
+            const lower = word.toLowerCase();
+            const n = lower.length;
+            const letters = [];
+            for (let i = 0; i < n; i++) if (isLetter(lower[i])) letters.push(i);
+            if (letters.length <= 1) return letters.slice();
+            if (letters.length === 2) return [letters[1]];
+
+            // Hide the vowels and the letter that teams up with them (aw, ou,
+            // ow, ar, er, al, igh...), which is where the tricky spellings live.
+            const chosen = new Set();
+            letters.forEach(i => {
+                const ch = lower[i];
+                const vowel = 'aeiou'.includes(ch) || (ch === 'y' && i > 0);
+                if (vowel) {
+                    chosen.add(i);
+                    if (i + 1 < n && 'wyrlgh'.includes(lower[i + 1])) chosen.add(i + 1);
+                }
+            });
+
+            const minBlanks = Math.max(1, Math.ceil(letters.length / 3));
+            const maxBlanks = Math.max(1, Math.ceil(letters.length * 0.6));
+            let picked = Array.from(chosen);
+            if (picked.length >= letters.length) picked = [];
+            while (picked.length > maxBlanks) picked.splice(Math.floor(Math.random() * picked.length), 1);
+            const spare = shuffleArray(letters.filter(i => !picked.includes(i)));
+            while (picked.length < minBlanks && spare.length) picked.push(spare.pop());
+            return picked.sort((a, b) => a - b);
+        }
+
+        function scrambleWord(word) {
+            const letters = word.toLowerCase().split('');
+            if (letters.length < 2) return letters;
+            let mixed = letters.slice();
+            for (let tries = 0; tries < 12; tries++) {
+                shuffleArray(mixed);
+                if (mixed.join('') !== letters.join('')) break;
+            }
+            return mixed;
+        }
+
+        function gridMode() {
+            return gameMode !== 'classic' || currentAttempts < maxAttempts;
+        }
+
+        function answerLength() {
+            const word = entryWord(words[currentIndex]);
+            return gameMode === 'missing' ? blankPositions.length : word.length;
+        }
+
+        function composeAnswer() {
+            const word = entryWord(words[currentIndex]);
+            const typed = hiddenInput.value;
+            if (gameMode !== 'missing') return typed;
+            let k = 0;
+            let out = '';
+            for (let i = 0; i < word.length; i++) {
+                if (blankPositions.includes(i)) {
+                    out += typed[k] || '';
+                    k++;
+                } else {
+                    out += word[i];
+                }
+            }
+            return out;
+        }
+
+        function setHearts() {
+            const lost = maxAttempts - currentAttempts;
+            attemptsLeftEl.replaceChildren();
+            for (let i = 0; i < maxAttempts; i++) {
+                const heart = document.createElement('span');
+                heart.textContent = '❤️';
+                if (i >= maxAttempts - lost) heart.className = 'heart-lost';
+                attemptsLeftEl.appendChild(heart);
+            }
+            attemptsLeftEl.setAttribute('aria-label', `${currentAttempts} tries left`);
+        }
+
+        function updateTrack() {
+            const total = Math.max(1, words.length);
+            const pct = Math.min(1, currentIndex / total);
+            trackFill.style.width = `calc((100% - 26px) * ${pct})`;
+            beeRunner.style.left = `calc((100% - 26px) * ${pct} + 10px)`;
+        }
+
+        function renderBank() {
+            letterBank.replaceChildren();
+            scrambleLetters.forEach((letter, index) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bank-key';
+                btn.dataset.index = String(index);
+                btn.textContent = letter.toUpperCase();
+                letterBank.appendChild(btn);
+            });
+            const back = document.createElement('button');
+            back.type = 'button';
+            back.className = 'bank-key back';
+            back.dataset.key = 'BACK';
+            back.textContent = '⌫';
+            back.setAttribute('aria-label', 'Delete letter');
+            letterBank.appendChild(back);
+            renderBankState();
+        }
+
+        function renderBankState() {
+            if (gameMode !== 'scramble') return;
+            const used = new Array(scrambleLetters.length).fill(false);
+            for (const ch of hiddenInput.value.toLowerCase()) {
+                const index = scrambleLetters.findIndex((letter, i) => !used[i] && letter === ch);
+                if (index !== -1) used[index] = true;
+            }
+            letterBank.querySelectorAll('.bank-key[data-index]').forEach(btn => {
+                btn.classList.toggle('used', used[Number(btn.dataset.index)]);
+            });
+        }
+
+        function typeKey(keyValue) {
+            if (inputLocked) return;
+            prepareRetryEntry();
+            if (keyValue === 'BACK') {
+                if (hiddenInput.value.length > 0) {
+                    hiddenInput.value = hiddenInput.value.slice(0, -1);
+                    playSound('type');
+                    updateTilesDisplay();
+                }
+                return;
+            }
+            if (gridMode() && hiddenInput.value.length >= answerLength()) return;
+            hiddenInput.value += keyValue;
+            playSound('type');
+            updateTilesDisplay(true);
+        }
+
+        virtualKeyboard.addEventListener('click', (e) => {
+            const keyBtn = e.target.closest('.key');
+            if (!keyBtn) return;
+            typeKey(keyBtn.getAttribute('data-key'));
+        });
+
+        letterBank.addEventListener('click', (e) => {
+            const btn = e.target.closest('.bank-key');
+            if (!btn) return;
+            if (btn.dataset.key === 'BACK') {
+                typeKey('BACK');
+                return;
+            }
+            if (btn.classList.contains('used')) return;
+            typeKey(scrambleLetters[Number(btn.dataset.index)]);
+        });
+
         hiddenInput.addEventListener('input', () => {
+            if (inputLocked) return;
             prepareRetryEntry();
             playSound('type');
-            updateTilesDisplay();
+            updateTilesDisplay(true);
         });
 
         function prepareRetryEntry() {
-            if (currentAttempts >= maxAttempts) return;
+            if (!gridMode()) return;
             if (document.getElementById('tile-0')) return;
             const typed = hiddenInput.value;
             createFixedGrid(entryWord(words[currentIndex]).length);
-            hiddenInput.value = typed;
+            hiddenInput.value = typed.slice(0, answerLength());
         }
 
         function scheduleRetry(correctSpelling, entry) {
@@ -1589,60 +3151,99 @@
             // Drop the failed spelling right away so the next tap starts fresh.
             // The colored tiles stay up until the hint grid replaces them.
             hiddenInput.value = '';
+            inputLocked = true;
+            hiddenInput.readOnly = true;
             setTimeout(() => {
                 if (serial !== retrySerial) return;
-                if (!document.getElementById('tile-0')) {
-                    createFixedGrid(correctSpelling.length);
-                    hiddenInput.value = '';
-                    updateTilesDisplay();
-                    if (!window.matchMedia("(pointer: coarse)").matches) {
-                        hiddenInput.focus();
-                    }
+                inputLocked = false;
+                hiddenInput.readOnly = false;
+                createFixedGrid(correctSpelling.length);
+                hiddenInput.value = '';
+                updateTilesDisplay();
+                renderBankState();
+                if (!window.matchMedia("(pointer: coarse)").matches) {
+                    hiddenInput.focus();
                 }
                 speakEntry(entry, true, false);
             }, 1200);
         }
 
-        function updateTilesDisplay() {
+        function updateTilesDisplay(popLast = false) {
             const targetWord = entryWord(words[currentIndex]);
             const typedVal = hiddenInput.value;
 
-            if (currentAttempts === maxAttempts) {
+            if (!gridMode()) {
                 tilesContainer.innerHTML = '';
                 for (let i = 0; i < typedVal.length; i++) {
                     const tile = document.createElement('div');
                     tile.className = 'tile';
+                    if (popLast && i === typedVal.length - 1) tile.classList.add('pop');
                     tile.textContent = typedVal[i].toUpperCase();
                     tilesContainer.appendChild(tile);
                 }
-            } else {
+                return;
+            }
+
+            if (!document.getElementById('tile-0')) createFixedGrid(targetWord.length);
+
+            if (gameMode === 'missing') {
+                let k = 0;
                 for (let i = 0; i < targetWord.length; i++) {
                     const tile = document.getElementById(`tile-${i}`);
                     if (!tile) continue;
-
-                    const charTyped = typedVal[i] || '';
-
+                    if (!blankPositions.includes(i)) {
+                        tile.textContent = targetWord[i].toUpperCase();
+                        tile.className = 'tile given';
+                        continue;
+                    }
+                    const charTyped = typedVal[k] || '';
+                    const isNext = k === typedVal.length;
+                    k++;
                     if (charTyped) {
                         tile.textContent = charTyped.toUpperCase();
-                        tile.className = 'tile';
-                    } else if (ghostMask[i] !== null) {
+                        tile.className = 'tile blank filled';
+                        if (popLast && k === typedVal.length) tile.classList.add('pop');
+                    } else if (ghostMask[i]) {
                         tile.textContent = ghostMask[i].toUpperCase();
                         tile.className = 'tile ghost';
                     } else {
                         tile.textContent = '';
-                        tile.className = 'tile';
+                        tile.className = 'tile blank';
                     }
+                    if (isNext) tile.classList.add('active');
+                }
+                renderBankState();
+                return;
+            }
 
-                    if (i === typedVal.length && typedVal.length < targetWord.length) {
-                        tile.classList.add('active');
-                    }
+            for (let i = 0; i < targetWord.length; i++) {
+                const tile = document.getElementById(`tile-${i}`);
+                if (!tile) continue;
+
+                const charTyped = typedVal[i] || '';
+
+                if (charTyped) {
+                    tile.textContent = charTyped.toUpperCase();
+                    tile.className = 'tile';
+                    if (popLast && i === typedVal.length - 1) tile.classList.add('pop');
+                } else if (ghostMask[i]) {
+                    tile.textContent = ghostMask[i].toUpperCase();
+                    tile.className = 'tile ghost';
+                } else {
+                    tile.textContent = '';
+                    tile.className = 'tile';
+                }
+
+                if (i === typedVal.length && typedVal.length < targetWord.length) {
+                    tile.classList.add('active');
                 }
             }
+            renderBankState();
         }
 
         function createFixedGrid(wordLength) {
             tilesContainer.innerHTML = '';
-            hiddenInput.maxLength = wordLength;
+            hiddenInput.maxLength = answerLength();
 
             for (let i = 0; i < wordLength; i++) {
                 const tl = document.createElement('div');
@@ -1654,20 +3255,34 @@
 
         function playNextWord() {
             retrySerial++;
+            updateTrack();
             if (currentIndex >= words.length) {
                 endGame();
                 return;
             }
 
+            inputLocked = false;
+            hiddenInput.readOnly = false;
             currentAttempts = maxAttempts;
-            attemptsLeftEl.textContent = currentAttempts;
+            setHearts();
             const entry = words[currentIndex];
-            ghostMask = new Array(entryWord(entry).length).fill(null);
+            const word = entryWord(entry);
+            ghostMask = new Array(word.length).fill(null);
+            blankPositions = gameMode === 'missing' ? pickBlanks(word) : [];
+            scrambleLetters = gameMode === 'scramble' ? scrambleWord(word) : [];
             updateContextLine(entry, false);
 
             hiddenInput.removeAttribute('maxlength');
             hiddenInput.value = '';
+            tilesContainer.innerHTML = '';
+            if (gameMode === 'scramble') renderBank();
+            if (gridMode()) createFixedGrid(word.length);
             updateTilesDisplay();
+
+            const linePool = gameMode === 'scramble' ? LINES.startScramble
+                : gameMode === 'missing' ? LINES.startMissing : LINES.start;
+            setBubble(currentIndex === 0 ? linePool[0] : pick(linePool));
+            setBuzz(gameBuzz, 'idle');
 
             if (!window.matchMedia("(pointer: coarse)").matches) {
                 hiddenInput.focus();
@@ -1676,15 +3291,30 @@
             speakEntry(entry, false, false);
         }
 
+        function recordResult(entry, result) {
+            wordResults.push({word: entryWord(entry), result});
+        }
+
         function handleAnswerSubmit(e) {
             e.preventDefault();
-            const userSpelling = hiddenInput.value.trim().toLowerCase();
+            if (inputLocked || currentIndex >= words.length) return;
             const entry = words[currentIndex];
             const correctSpelling = entryWord(entry).toLowerCase();
 
+            if (!hiddenInput.value.trim()) return;
+
+            if (gridMode() && hiddenInput.value.length < answerLength()) {
+                setBubble(gameMode === 'scramble' ? 'Use all the letters first!' : 'Fill every box first!');
+                setBuzz(gameBuzz, 'think');
+                tilesContainer.classList.add('shake');
+                setTimeout(() => tilesContainer.classList.remove('shake'), 400);
+                return;
+            }
+
+            const userSpelling = composeAnswer().trim().toLowerCase();
             if (!userSpelling) return;
 
-            let allCorrect = (userSpelling === correctSpelling);
+            const allCorrect = (userSpelling === correctSpelling);
 
             for (let i = 0; i < correctSpelling.length; i++) {
                 if (userSpelling[i] === correctSpelling[i]) {
@@ -1692,7 +3322,7 @@
                 }
             }
 
-            if (currentAttempts === maxAttempts) {
+            if (!gridMode()) {
                 const tiles = Array.from(tilesContainer.children);
                 tiles.forEach((tile, i) => {
                     tile.className = (userSpelling[i] === correctSpelling[i]) ? 'tile correct' : 'tile incorrect';
@@ -1706,23 +3336,49 @@
                 }
             }
 
+            const attemptNumber = maxAttempts - currentAttempts + 1;
+
             if (allCorrect) {
                 retrySerial++;
+                inputLocked = true;
+                hiddenInput.readOnly = true;
                 score++;
                 streak++;
+                bestStreakThisGame = Math.max(bestStreakThisGame, streak);
                 scoreEl.textContent = score;
                 streakBox.textContent = `🔥 ${streak}`;
+                streakBox.classList.toggle('hot', streak >= 3);
+
+                const base = [10, 6, 3][attemptNumber - 1] || 3;
+                const bonus = streak >= 3 ? Math.min(streak - 2, 5) : 0;
+                const earned = base + bonus;
+                gameHoney += earned;
+                honeyGameEl.textContent = gameHoney;
+                showHoneyFloat(bonus ? `+${earned} 🍯 🔥` : `+${earned} 🍯`);
+
+                recordResult(entry, attemptNumber === 1 ? 'first' : 'retry');
+                if (attemptNumber === 1) {
+                    const stars = changeStars(entryWord(entry), 1);
+                    if (stars === 3) showToast(`⭐⭐⭐ You mastered "${entryWord(entry)}"!`);
+                }
+                if (isReviewMode) awardSticker('comeback');
+                if (streak === 5) awardSticker('streak5');
+                if (streak === 10) awardSticker('streak10');
 
                 playSound('correct');
-                triggerConfetti(40);
+                triggerConfetti(streak >= 5 ? 70 : 40);
                 updateContextLine(entry, true);
-                showFeedback('Correct! ✨', 'correct');
+
+                let message = attemptNumber === 1 ? pick(LINES.praise) : pick(LINES.fixed);
+                if (streak === 3) message = '🔥 3 in a row! Bonus honey!';
+                else if (streak === 5) message = '🔥🔥 5 in a row! You\'re on fire!';
+                else if (streak >= 7 && streak % 2 === 1) message = `🔥 ${streak} in a row! Unbelievable!`;
+                setBubble(message, 'correct');
+                setBuzz(gameBuzz, streak >= 3 ? 'cheer' : 'happy');
 
                 currentIndex++;
-                setTimeout(() => {
-                    feedback.textContent = '';
-                    playNextWord();
-                }, 1500);
+                updateTrack();
+                setTimeout(playNextWord, 1500);
             } else {
                 playSound('wrong');
                 tilesContainer.classList.add('shake');
@@ -1734,15 +3390,21 @@
 
                 streak = 0;
                 streakBox.textContent = `🔥 0`;
+                streakBox.classList.remove('hot');
 
                 currentAttempts--;
-                attemptsLeftEl.textContent = currentAttempts;
+                setHearts();
 
                 if (currentAttempts > 0) {
-                    showFeedback(`Try again! (${currentAttempts} attempt${currentAttempts > 1 ? 's' : ''} remaining)`, 'incorrect');
+                    setBubble(`${pick(LINES.retry)} (${currentAttempts} ${currentAttempts > 1 ? 'tries' : 'try'} left)`, 'incorrect');
+                    setBuzz(gameBuzz, 'sad');
                     scheduleRetry(correctSpelling, entry);
-
                 } else {
+                    inputLocked = true;
+                    hiddenInput.readOnly = true;
+                    recordResult(entry, 'missed');
+                    changeStars(entryWord(entry), -1);
+
                     createFixedGrid(correctSpelling.length);
                     for (let i = 0; i < correctSpelling.length; i++) {
                         const tile = document.getElementById(`tile-${i}`);
@@ -1751,35 +3413,147 @@
                     }
                     updateContextLine(entry, true);
 
-                    showFeedback(`Out of attempts! The correct spelling was "${entryWord(entry)}".`, 'incorrect');
+                    setBubble(`${pick(LINES.missed)} "${entryWord(entry)}"`, 'incorrect');
+                    setBuzz(gameBuzz, 'think');
                     currentIndex++;
+                    updateTrack();
 
-                    setTimeout(() => {
-                        feedback.textContent = '';
+                    // Say and spell the right answer, then move on once the
+                    // reader is done (or after a safety timeout without speech).
+                    const serial = ++retrySerial;
+                    let advanced = false;
+                    const advance = () => {
+                        if (advanced || serial !== retrySerial) return;
+                        advanced = true;
                         playNextWord();
-                    }, 2500);
+                    };
+                    setTimeout(() => {
+                        if (serial !== retrySerial) return;
+                        speakEntry(entry, false, true, () => setTimeout(advance, 900));
+                    }, 400);
+                    setTimeout(advance, Math.min(9000, 2500 + correctSpelling.length * 550));
                 }
             }
         }
 
-        function showFeedback(text, className) {
-            feedback.textContent = text;
-            feedback.className = `feedback ${className}`;
-        }
-
         function endGame() {
             retrySerial++;
+            inputLocked = true;
             clearInterval(timerInterval);
             stopSpeaking();
+            totalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
             learnScreen.classList.add('hidden');
             gameScreen.classList.add('hidden');
             endScreen.classList.remove('hidden');
 
+            // ---- Profile updates ----
+            profile.honey += gameHoney;
+            profile.games += 1;
+            profile.bestStreak = Math.max(profile.bestStreak, bestStreakThisGame);
+            const today = dateKey(new Date());
+            if (!profile.days.includes(today)) profile.days.push(today);
+            if (profile.days.length > 120) profile.days = profile.days.slice(-120);
+
+            const total = words.length;
+            const firstTries = wordResults.filter(r => r.result === 'first').length;
+            awardSticker('first');
+            if (total >= 5 && firstTries === total) awardSticker('perfect');
+            if (total >= 5 && score === total && totalElapsedSeconds / total <= 8) awardSticker('speedy');
+            if (gameMode === 'scramble') awardSticker('scramble');
+            if (gameMode === 'missing') awardSticker('missing');
+            const streakDays = dayStreak(profile.days);
+            if (streakDays >= 3) awardSticker('days3');
+            if (streakDays >= 5) awardSticker('days5');
+            if (profile.honey >= 100) awardSticker('honey100');
+            if (profile.honey >= 1000) awardSticker('honey1000');
+
+            const fullList = rawActiveList.length ? rawActiveList : words;
+            const masteredCount = fullList.filter(entry => wordStars(entryWord(entry)) >= 3).length;
+            if (fullList.length >= 5 && masteredCount === fullList.length) awardSticker('master');
+
+            saveProfile();
+
+            const rankNow = rankFor(profile.honey);
+            if (profileRankBefore !== null && rankNow > profileRankBefore) {
+                const rank = RANKS[rankNow];
+                showToast(`Rank up! You're now a ${rank.emoji} ${rank.name}!`);
+            }
+
+            // ---- End screen ----
             playSound('victory');
             triggerConfetti(120);
 
-            finalScoreEl.textContent = `You scored ${score} out of ${words.length}!`;
-            finalTimeEl.textContent = `Total Time: ${totalElapsedSeconds} seconds`;
+            const pct = total ? score / total : 0;
+            const starsEarned = pct === 1 ? 3 : pct >= 0.7 ? 2 : 1;
+            const starsEl = $('big-stars');
+            starsEl.replaceChildren();
+            for (let i = 0; i < 3; i++) {
+                const s = document.createElement('span');
+                s.textContent = '⭐';
+                if (i >= starsEarned) s.className = 'dim';
+                starsEl.appendChild(s);
+            }
+            $('end-title').textContent = starsEarned === 3
+                ? (firstTries === total ? 'Perfect! Hive-five! 🖐️' : 'You got them all! 🎉')
+                : starsEarned === 2 ? 'Great job! 🎉' : 'Good practice! 💪';
+            setBuzz(endBuzz, starsEarned === 1 ? 'happy' : 'cheer');
+
+            finalScoreEl.textContent = `You spelled ${score} out of ${total} words!`;
+            finalTimeEl.textContent = `${totalElapsedSeconds}s`;
+            $('end-honey').textContent = gameHoney;
+
+            const resultsList = $('results-list');
+            resultsList.replaceChildren();
+            wordResults.forEach(r => {
+                const li = document.createElement('li');
+                li.className = r.result;
+                const icon = r.result === 'first' ? '✅' : r.result === 'retry' ? '🟡' : '❌';
+                li.textContent = `${icon} ${r.word}`;
+                resultsList.appendChild(li);
+            });
+
+            const masteryEl = $('end-mastery');
+            if (fullList.length) {
+                masteryEl.classList.remove('hidden');
+                masteryEl.replaceChildren();
+                const line = document.createElement('div');
+                line.textContent = masteredCount === fullList.length
+                    ? `👑 You've mastered all ${fullList.length} words!`
+                    : `⭐ Mastered ${masteredCount} of ${fullList.length} words. Keep going!`;
+                const meter = document.createElement('div');
+                meter.className = 'meter green';
+                const fill = document.createElement('div');
+                meter.appendChild(fill);
+                masteryEl.append(line, meter);
+                requestAnimationFrame(() => {
+                    fill.style.width = `${(masteredCount / fullList.length) * 100}%`;
+                });
+            } else {
+                masteryEl.classList.add('hidden');
+            }
+
+            const stickersBox = $('new-stickers');
+            if (gameNewStickers.length) {
+                stickersBox.classList.remove('hidden');
+                stickersBox.replaceChildren();
+                const title = document.createElement('div');
+                title.textContent = gameNewStickers.length > 1 ? '🎉 New stickers!' : '🎉 New sticker!';
+                const row = document.createElement('div');
+                row.className = 'row';
+                gameNewStickers.forEach(sticker => {
+                    const mini = document.createElement('div');
+                    mini.className = 'mini';
+                    const emoji = document.createElement('span');
+                    emoji.textContent = sticker.emoji;
+                    const name = document.createElement('div');
+                    name.textContent = sticker.name;
+                    mini.append(emoji, name);
+                    row.appendChild(mini);
+                });
+                stickersBox.append(title, row);
+            } else {
+                stickersBox.classList.add('hidden');
+            }
 
             if (missedWords.length > 0) {
                 missedCountEl.textContent = missedWords.length;
@@ -1789,21 +3563,19 @@
             }
 
             const storageKey = `spelling_bee_${playerName}`;
-            const previousRecord = localStorage.getItem(storageKey);
+            const oldData = storeGet(storageKey, null);
             let isNewRecord = false;
 
-            if (!previousRecord) {
-                isNewRecord = true;
-            } else {
-                const oldData = JSON.parse(previousRecord);
-                if (score > oldData.score || (score === oldData.score && totalElapsedSeconds < oldData.time)) {
+            if (!isReviewMode) {
+                if (!oldData || typeof oldData !== 'object') {
+                    isNewRecord = true;
+                } else if (score > oldData.score || (score === oldData.score && totalElapsedSeconds < oldData.time)) {
                     isNewRecord = true;
                 }
             }
 
             if (isNewRecord) {
-                const newRecord = {score, total: words.length, time: totalElapsedSeconds};
-                localStorage.setItem(storageKey, JSON.stringify(newRecord));
+                storeSet(storageKey, {score, total, time: totalElapsedSeconds});
                 newRecordTag.classList.remove('hidden');
             } else {
                 newRecordTag.classList.add('hidden');
@@ -1814,7 +3586,7 @@
             const listToReview = copyEntries(missedWords);
             missedWords = [];
             isReviewMode = true;
-            startGame(listToReview, {skipLearn: true});
+            startGame(listToReview, {skipLearn: true, keepMode: true});
         }
 
         function resetGame() {
@@ -1827,10 +3599,11 @@
             setupScreen.classList.remove('hidden');
             fileLoader.value = '';
             isReviewMode = false;
-            updateHighScoreDisplay();
+            refreshSetup();
         }
 
-        updateHighScoreDisplay();
+        refreshSetup();
+        wordEditor.open = !wordInput.value.trim();
     </script>
 </body>
 
